@@ -1,4 +1,4 @@
-require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
+.corequire('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/root.schema');
@@ -41,7 +41,6 @@ app.post('/login', (req, res) => {
         body : req.body
       });
     }
-    console.log(user, user.firstname, user.lastname, '??');
     bcrypt.compare(req.body.password, user.password).then(function(valid){
       if (!valid) {
 
@@ -95,6 +94,6 @@ app.post('/login', (req, res) => {
     }
   })}));
 
-  app.listen(configuration.APP_PORT, () => {
+  app.listen(configuration.PORT, () => {
     console.log("SERVER STARTED");
   });
