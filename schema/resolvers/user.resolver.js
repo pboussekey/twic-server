@@ -44,7 +44,10 @@ module.exports = new GraphQLObjectType({
         },
         resolve(parent, args, context){
           var query =   `SELECT
-          user.*,
+          user.id, user.firstname, user.lastname, user.email,
+          user.password, user.classYear, user.type, user.isActive,
+          user.created_at, user.updated_at, user.school_id,
+          user.major_id, user.minor_id, user.avatar_id,
           SUM(IF(followers.follower_id = :user, 1, 0)) > 0 as followed,
           SUM(IF(followers.user_id = :user, 1, 0)) > 0 as following,
           COUNT(DISTINCT followers.follower_id) as nbFollowers,
@@ -64,7 +67,11 @@ module.exports = new GraphQLObjectType({
           WHERE user.deleted_at IS NULL AND user.id <> :user
           ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE "%:search" OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE "%:search")'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
-          GROUP BY user.id
+          GROUP BY
+          user.id, user.firstname, user.lastname, user.email,
+          user.password, user.classYear, user.type, user.isActive,
+          user.created_at, user.updated_at, user.school_id,
+          user.major_id, user.minor_id, user.avatar_id
           ${ !args.user_id && null !== args.follower ? 'HAVING followed = :follower' : ''}
           ${ !args.user_id && null !== args.following ? 'HAVING following = :following' : ''}
           ORDER BY COUNT(DISTINCT followers.follower_id) DESC`;
