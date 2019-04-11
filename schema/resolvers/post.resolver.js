@@ -43,10 +43,10 @@ module.exports = new GraphQLObjectType({
                 OR hashtag_followers.follower_id IS NOT NULL
                 OR user_followers.follower_id IS NOT NULL
             )
-            GROUP BY post.id
             `;
           }
-          query += `ORDER BY post.created_at DESC`;
+          query += `GROUP BY post.id
+          ORDER BY post.created_at DESC`;
 
         return Sequelize
         .query(
