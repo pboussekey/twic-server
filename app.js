@@ -1,4 +1,4 @@
-.corequire('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
+require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/root.schema');
