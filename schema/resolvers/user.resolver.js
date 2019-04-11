@@ -61,14 +61,13 @@ module.exports = new GraphQLObjectType({
             query += `JOIN user_followers ON (user.id = user_followers.user_id AND user_followers.follower_id = :user_id) `;
           }
           query += `
-          WHERE user.deleted_at IS NULL
+          WHERE user.deleted_at IS NULL AND user.id <> :user
           ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE "%:search" OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE "%:search")'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
           GROUP BY user.id
           ${ !args.user_id && null !== args.follower ? 'HAVING followed = :follower' : ''}
           ${ !args.user_id && null !== args.following ? 'HAVING following = :following' : ''}
           ORDER BY COUNT(DISTINCT followers.follower_id) DESC`;
-          console.log(query);
           return Sequelize
           .query(
             query,
