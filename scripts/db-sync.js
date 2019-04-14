@@ -1,10 +1,4 @@
 require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
-const Models = require('../loaders/models');
-const _ = require('lodash');
-const sequelize = require('../database/sequelize');
+const Db = require('../database/database');
 
-
-
-var done = _.after(_.keys(Models).length , () => sequelize.sync({ alter : true}).then(() => process.exit(0)));
-
-_.forIn(Models, M => M.model.sync({ alter : true }).then(done));
+Db.sequelize.sync({ force : true}).then(() => process.exit(0));

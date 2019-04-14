@@ -1,11 +1,11 @@
 const Sequelize = require('sequelize');
-const Model = require('./abstract_model');
+const sequelize = require('../database/sequelize');
 const School = require('./school.model');
 const Field = require('./field.model');
 const File = require('./file.model');
 const Hashtag = require('./hashtag.model');
 
-const User = new Model('User', {
+const User = sequelize.define('user', {
   firstname: {
     type: Sequelize.STRING
   },
@@ -20,7 +20,8 @@ const User = new Model('User', {
     type: Sequelize.STRING
   },
   classYear: {
-    type: Sequelize.INTEGER
+    type: Sequelize.INTEGER,
+    underscored:true
   },
   type: {
     type: Sequelize.STRING,
@@ -29,7 +30,8 @@ const User = new Model('User', {
     }
   },
   isActive: {
-    type: Sequelize.BOOLEAN
+    type: Sequelize.BOOLEAN,
+    underscored:true
   },
   followed: {
     type: Sequelize.VIRTUAL
@@ -45,13 +47,13 @@ const User = new Model('User', {
   }
 });
 
-User.model.belongsTo(School.model);
-User.model.belongsTo(Field.model, { foreignKey: 'major_id', as : 'major' });
-User.model.belongsTo(Field.model, { foreignKey: 'minor_id', as : 'minor' });
-User.model.belongsTo(File.model, { foreignKey : 'avatar_id', as : 'avatar'});
+User.belongsTo(School, { foreignKey: 'school_id', as : 'school' });
+User.belongsTo(Field, { foreignKey: 'major_id', as : 'major' });
+User.belongsTo(Field, { foreignKey: 'minor_id', as : 'minor' });
+User.belongsTo(File, { foreignKey : 'avatar_id', as : 'avatar'});
 
-User.model.belongsToMany(User.model, {through: 'user_followers', as : 'followers'});
-User.model.belongsToMany(User.model, {through: 'user_followers', as : 'followings', foreignKey : 'follower_id'});
+User.belongsToMany(User, {through: 'user_followers', as : 'followers'});
+User.belongsToMany(User, {through: 'user_followers', as : 'followings', foreignKey : 'follower_id'});
 
 
 module.exports = User;

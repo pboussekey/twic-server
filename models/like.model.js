@@ -1,20 +1,23 @@
 const Sequelize = require('sequelize');
-const Model = require('./abstract_model');
+const sequelize = require('../database/sequelize');
 const User = require('./user.model');
 const Post = require('./post.model');
 
-const Like = new Model('Like', {}, {paranoid:false});
+const Like = sequelize.define('like', {},
+{
+  paranoid: false
+});
 
-Like.model.belongsTo(Post.model, { foreignKey: {
+Like.belongsTo(Post, { foreignKey: {
   allowNull: false,
   primaryKey: true
 }});
 
-Like.model.belongsTo(User.model, { foreignKey: {
+Like.belongsTo(User, { foreignKey: {
   allowNull: false,
   primaryKey: true
 }});
 
-Like.model.removeAttribute('id');
+Like.removeAttribute('id');
 
 module.exports = Like;

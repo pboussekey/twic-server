@@ -1,8 +1,7 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLBoolean, GraphQLString } = graphql;
 const Hashtag = require('../defs/hashtag.def');
-const HashtagModel = require('../../loaders/models.js')['Hashtag'];
-const Sequelize = require('../../database/sequelize');
+const Db = require('../../database/database');
 
 module.exports = new GraphQLObjectType({
   name: `HashtagResolver`,
@@ -11,7 +10,7 @@ module.exports = new GraphQLObjectType({
       type: new GraphQLList(Hashtag),
       args: {followed : {type: GraphQLBoolean}, search : {type: GraphQLString}},
       resolve(parent, args, context){
-        return Sequelize
+        return Db.sequelize
         .query(
           `SELECT
           hashtag.*,
@@ -27,8 +26,8 @@ module.exports = new GraphQLObjectType({
           ORDER BY SUM(IF(hashtag_followers.follower_id IS NOT NULL, 1, 0)) DESC`,
           {
             replacements: { user: context.user.id, followed : args.followed, search : args.search ? args.search.toLowerCase() : null },
-            type: Sequelize.QueryTypes.SELECT,
-            model: HashtagModel.model,
+            type: Db.Sequelize.QueryTypes.SELECT,
+            model: Db.Hashtag,
             mapToModel: true
           });
         }

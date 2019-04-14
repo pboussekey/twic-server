@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLString, GraphQLID, GraphQLNonNull } = graphql;
-const Models = require('../../loaders/models.js');
+const Db = require('../../database/database');
+const Cache = require('../../database/cache');
 const FileDef = require('./file.def.js');
 
 var Def = new GraphQLObjectType({
@@ -11,13 +12,13 @@ var Def = new GraphQLObjectType({
     logo:  {
       type : FileDef,
       resolve(parent, args){
-        return Models.File.get(parent.logo_id);
+        return Cache.get(Db.File, parent.logo_id);
       }
     },
     university : {
       type : Def,
       resolve(parent, args){
-        return Models.School.get(parent.university_id);
+        return Cache.get(Db.School, parent.university_id);
       }
     }
   })

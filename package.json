@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "NODE_ENV=default nodemon app",
+    "watch": "NODE_ENV=local nodemon app",
     "start": "node app",
-    "db-sync": "NODE_ENV=default node scripts/db-sync",
-    "clear-cache": "NODE_ENV=default node scripts/clear-cache",
+    "db-sync": "NODE_ENV=local node scripts/db-sync",
+    "clear-cache": "NODE_ENV=local node scripts/clear-cache",
     "create": "node scripts/create-struct"
   },
   "author": "",
@@ -27,9 +27,10 @@
     "graphql-tools": "^4.0.4",
     "jsonwebtoken": "^8.5.0",
     "lodash": "^4.17.11",
+    "mariadb": "^2.0.3",
     "minimist": "^1.2.0",
-    "mysql2": "^1.6.5",
-    "sequelize": "^4.43.0"
+    "sequelize": "^5.3.3",
+    "sequelize-cli": "^5.4.0"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"

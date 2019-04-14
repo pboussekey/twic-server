@@ -1,7 +1,7 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLID } = graphql;
 const School = require('../defs/school.def');
-const SchoolModel = require('../../loaders/models.js')['School'];
+const Db = require('../../database/database');
 
 module.exports = new GraphQLObjectType({
   name: `SchoolResolver`,
@@ -10,14 +10,14 @@ module.exports = new GraphQLObjectType({
       type: new GraphQLList(School),
       args: {id : {type: GraphQLID}},
       resolve(parent, args, context){
-        return SchoolModel.get(args.id);
+        return Db.School.get(args.id);
       }
     },
     'schools': {
       type: new GraphQLList(School),
       args: {university_id : {type: GraphQLID}},
       resolve(parent, args, context){
-        return SchoolModel.getList({ where : { university_id : args.university_id ? args.university_id : {$eq : null}}} );
+        return Db.School.findAll({ raw : true, where : { university_id : args.university_id ? args.university_id : {[Db.Sequelize.Op.eq] : null}}} );
       }
     }
   }

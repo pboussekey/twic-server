@@ -6,34 +6,37 @@ const {
 } = graphql_date;
 const UserDef = require('./user.def.js');
 const FileDef = require('./file.def.js');
-const Models = require('../../loaders/models.js');
+const Db = require('../../database/database');
+const Cache = require('../../database/cache');
 
 var PostDef = new GraphQLObjectType({
   name: `PostDef`,
   fields: () => ({
     id: {type:new GraphQLNonNull(GraphQLID)},
     content: {type: GraphQLString},
-    created_at: {
+    createdAt: {
       type: GraphQLDateTime
     },
     user : {
-      type : new GraphQLNonNull(UserDef),
+      type : UserDef,
       resolve(parent, args){
-        return Models.User.get(parent.user_id);
+        console.log("CACHE?", parent);
+        return Cache.get(Db.User, parent.user_id);
       }
     },
     files : {
       type : new GraphQLList(FileDef),
       resolve(parent, args){
-        return Models.File.getList({
-            include: [{ model : Models.Post.model, attributes : [], where : { id : parent.id }}]
+        return Db.File.findAll({
+            raw : true,
+            include: [{ model : Db.Post, attributes : [], where : { id : parent.id }}]
         });
       }
     },
     nbComments : {
       type : GraphQLInt,
       resolve(parent, args){
-        return Models.Post.model.count({
+        return Db.Post.count({
            col : 'id',
            distinct : true,
            where : { post_id : parent.id }
@@ -43,7 +46,7 @@ var PostDef = new GraphQLObjectType({
     nbLikes : {
       type : GraphQLInt,
       resolve(parent, args){
-        return Models.Like.model.count({
+        return Db.Like.count({
            col : 'user_id',
            distinct : true,
            where : { post_id : parent.id }
@@ -53,7 +56,7 @@ var PostDef = new GraphQLObjectType({
     isLiked : {
       type : GraphQLInt,
       resolve(parent, args, context){
-        return Models.Like.model.count({
+        return Db.Like.count({
            col : 'user_id',
            distinct : true,
            where : { post_id : parent.id, user_id : context.user.id }

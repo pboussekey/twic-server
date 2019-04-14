@@ -3,7 +3,8 @@ const { GraphQLObjectType, GraphQLString, GraphQLID, GraphQLNonNull, GraphQLInt,
 const SchoolDef = require('./school.def.js');
 const FieldDef = require('./field.def.js');
 const FileDef = require('./file.def.js');
-const Models = require('../../loaders/models.js');
+const Db = require('../../database/database');
+const Cache = require('../../database/cache');
 
 module.exports = new GraphQLObjectType({
   name: `UserDef`,
@@ -22,25 +23,25 @@ module.exports = new GraphQLObjectType({
     avatar:  {
       type : FileDef,
       resolve(parent, args){
-        return Models.File.get(parent.avatar_id);
+        return Cache.get(Db.File, parent.avatar_id);
       }
     },
     school : {
-      type : new GraphQLNonNull(SchoolDef),
+      type : SchoolDef,
       resolve(parent, args){
-        return Models.School.get(parent.school_id);
+        return Cache.get(Db.School, parent.school_id);
       }
     },
     major : {
       type : FieldDef,
       resolve(parent, args){
-        return Models.Field.get(parent.major_id);
+        return Cache.get(Db.Field, parent.major_id);
       }
     },
     minor : {
       type : FieldDef,
       resolve(parent, args){
-        return Models.Field.get(parent.minor_id);
+        return Cache.get(Db.Field, parent.minor_id);
       }
     }
   }});

@@ -1,8 +1,7 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLID } = graphql;
-const Models = require('../../loaders/models.js');
 const Post = require('../defs/post.def');
-const Sequelize = require('../../database/sequelize');
+const Db = require('../../database/database');
 
 module.exports = new GraphQLObjectType({
   name: `PostResolver`,
@@ -48,14 +47,14 @@ module.exports = new GraphQLObjectType({
           query += `GROUP BY post.id
           ORDER BY post.created_at DESC`;
 
-        return Sequelize
+        return Db.sequelize
         .query(
           query,
           {
             replacements: { user: context.user.id, user_id : args.user_id, hashtag_id : args.hashtag_id },
-            type: Sequelize.QueryTypes.SELECT,
-            model: Models.Post.model,
-            mapToModel: true // pass true here if you have any mapped fields
+            type: Db.Sequelize.QueryTypes.SELECT,
+            model: Db.Post,
+            mapToModel: true 
           });
         }
       }

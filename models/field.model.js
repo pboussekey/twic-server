@@ -1,11 +1,10 @@
 const Sequelize = require('sequelize');
-const Model = require('./abstract_model');
+const sequelize = require('../database/sequelize');
 
-const Field = new Model('Field', {
+const Field = sequelize.define('field', {
   name: {
     type: Sequelize.STRING
   }
 });
-
 
 module.exports = Field;

@@ -1,6 +1,6 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLString, GraphQLNonNull, GraphQLID, GraphQLInt } = graphql;
-const Models = require('../../loaders/models.js');
+const Db = require('../../database/database');
 const ResultDef = require('../defs/result.def');
 const _ = require('lodash');
 
@@ -12,7 +12,7 @@ module.exports = new GraphQLObjectType({
       args : {
         hashtag_id : { type :  GraphQLID }
       },
-      resolve : (parent, args, context) => Models.HashtagFollowers.model
+      resolve : (parent, args, context) => Db.HashtagFollowers
         .create({ hashtag_id : args.hashtag_id, follower_id : context.user.id})
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Already followed'}))
@@ -23,7 +23,7 @@ module.exports = new GraphQLObjectType({
       args : {
         hashtag_id : { type :  GraphQLID }
       },
-      resolve : (parent, args, context) => Models.HashtagFollowers.model
+      resolve : (parent, args, context) => Db.HashtagFollowers
         .destroy({ where : { hashtag_id : args.hashtag_id, follower_id : context.user.id} })
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Not followed'}))

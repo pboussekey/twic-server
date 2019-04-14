@@ -1,4 +1,5 @@
-const Sequelize = require('sequelize');
-const Model = require('./abstract_model');
+const Db = require('./database');
 
-const {Name} = new Model('{Name}', {});
+const {Name} = Db.sequelize.define('{Name}', {});
+
+module.exports = {Name};

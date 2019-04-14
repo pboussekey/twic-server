@@ -5,32 +5,31 @@ const schema = require('./schema/root.schema');
 var jwt = require('express-jwt');
 const bcrypt = require('bcrypt');
 const jsonwebtoken = require('jsonwebtoken');
-const Models = require('./loaders/models');
 const firebase = require('./firebase/firebase');
-const Op = require('./database/sequelize').Op;
+const Db = require('./database/database');
 
 const configuration = process.env;
 const app = express();
 
 app.use(express.json());
-
+console.log(Db.User);
 app.post('/login', (req, res) => {
-  Models.User.model.findOne({
+  Db.User.findOne({
     attributes:['id', 'firstname', 'lastname', 'email', 'type', 'password','isActive', 'classYear'],
     include : [
-      { model : Models.File.model, as : 'avatar', attributes : ['name', 'bucketname', 'token']},
-      { model : Models.School.model, attributes : ['id', 'name'],
+      { model : Db.File, as : 'avatar', attributes : ['name', 'bucketname', 'token']},
+      { model : Db.School, attributes : ['id', 'name'],
         include : [
-          { model : Models.School.model, as : 'university', attributes : ['id','name'],
-              include : [{ model : Models.File.model, as : 'logo', attributes : ['name', 'bucketname', 'token']}] },
-          { model : Models.File.model, as : 'logo', attributes : ['name', 'bucketname', 'token']}
+          { model : Db.School, as : 'university', attributes : ['id','name'],
+              include : [{ model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}] },
+          { model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}
         ]
       },
-      { model : Models.Field.model, as : 'major', attributes : ['id', 'name'] },
-      { model : Models.Field.model, as : 'minor', attributes : ['id', 'name']  }
+      { model : Db.Field, as : 'major', attributes : ['id', 'name'] },
+      { model : Db.Field, as : 'minor', attributes : ['id', 'name']  }
     ],
     where:{
-      email: req.body.email
+      email: req.body.email.trim()
     }
   }).then(user => {
     user = JSON.parse(JSON.stringify(user));
@@ -41,7 +40,7 @@ app.post('/login', (req, res) => {
         body : req.body
       });
     }
-    bcrypt.compare(req.body.password, user.password).then(function(valid){
+    bcrypt.compare(req.body.password.trim(), user.password).then(function(valid){
       if (!valid) {
 
         return res.status(400).json({
@@ -68,15 +67,16 @@ app.post('/login', (req, res) => {
   });
 
 
-  app.post('/schools', (req, res) =>
-    Models.School
-      .getList(
+  app.post('/schools', (req, res) => { console.log(req);
+    return Db.School
+      .findAll(
         {
+          raw : true,
           where:
           {
-            university_id:{[Op.eq]:null}
+            university_id:{[Db.Sequelize.Op.eq]:null}
           }
-        }).then((schools) => res.json({ schools :  schools})));
+        }).then((schools) => res.json({ schools :  schools})); });
 
   app.use(auth).post('/fbtoken', (req, res) => {
     return firebase.getToken().then(fbToken => res.json({

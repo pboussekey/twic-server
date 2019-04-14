@@ -1,8 +1,7 @@
 const Sequelize = require('sequelize');
-const Model = require('./abstract_model');
-const Field = require('./field.model');
+const sequelize = require('../database/sequelize');
 
-const Hashtag = new Model('Hashtag', {
+const Hashtag = sequelize.define('hashtag', {
   name: {
     type: Sequelize.STRING
   },
@@ -13,6 +12,5 @@ const Hashtag = new Model('Hashtag', {
     type: Sequelize.VIRTUAL
   }
 });
-
 
 module.exports = Hashtag;

@@ -1,7 +1,7 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLID } = graphql;
 const Field = require('../defs/field.def');
-const FieldModel = require('../../loaders/models.js')['Field'];
+const Db = require('../../database/database');
 
 module.exports = new GraphQLObjectType({
   name: `FieldResolver`,
@@ -9,7 +9,7 @@ module.exports = new GraphQLObjectType({
     'fields': {
       type: new GraphQLList(Field),
       resolve(parent, args, context){
-        return FieldModel.getList();
+        return Db.Field.findAll();
       }
     }
   }

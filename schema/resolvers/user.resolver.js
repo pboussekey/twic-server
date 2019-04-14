@@ -1,8 +1,7 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLBoolean, GraphQLString } = graphql;
 const User = require('../defs/user.def');
-const UserModel = require('../../loaders/models.js')['User'];
-const Sequelize = require('../../database/sequelize');
+const Db = require('../../database/database');
 
 module.exports = new GraphQLObjectType({
   name: `UserResolver`,
@@ -11,7 +10,7 @@ module.exports = new GraphQLObjectType({
       type: User,
       args: {id : {type: GraphQLID}},
       resolve(parent, args, context){
-        return Sequelize
+        return Db.sequelize
         .query(
           `SELECT
           user.*,
@@ -29,7 +28,7 @@ module.exports = new GraphQLObjectType({
           GROUP BY user.id`,
           {
             replacements: { user: args.id },
-            type: Sequelize.QueryTypes.SELECT,
+            type: Db.sequelize.QueryTypes.SELECT,
           }).then((users) => users[0]);
         }
       },
@@ -43,32 +42,31 @@ module.exports = new GraphQLObjectType({
           user_id : { type : GraphQLID}
         },
         resolve(parent, args, context){
-          var query =   `SELECT
-          user.*,
-          SUM(IF(followers.follower_id = :user, 1, 0)) > 0 as followed,
-          SUM(IF(followers.user_id = :user, 1, 0)) > 0 as following,
-          COUNT(DISTINCT followers.follower_id) as nbFollowers,
-          COUNT(DISTINCT followings.user_id) as nbFollowings
+          var query =  `SELECT
+          user.*
           FROM
           user
           LEFT JOIN user_followers as followers ON (user.id = followers.user_id)
           LEFT JOIN user_followers as followings ON (user.id = followings.follower_id)
           `;
           if(args.user_id && args.follower){
-            query += `JOIN user_followers ON (user.id = user_followers.follower_id AND user_followers.user_id = :user_id) `;
+            query += `JOIN user_followers ON (user.id = user_followers.follower_id AND user_followers.user_id = :user_id)
+            `;
           }
           else if(args.user_id && args.following){
-            query += `JOIN user_followers ON (user.id = user_followers.user_id AND user_followers.follower_id = :user_id) `;
+            query += `JOIN user_followers ON (user.id = user_followers.user_id AND user_followers.follower_id = :user_id)
+            `;
           }
-          query += `
-          WHERE user.deleted_at IS NULL AND user.id <> :user
+          query += `WHERE user.deleted_at IS NULL AND user.id <> :user
           ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE "%:search" OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE "%:search")'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
-          GROUP BY  user.id
+          GROUP BY user.id
           ${ !args.user_id && null !== args.follower ? 'HAVING followed = :follower' : ''}
           ${ !args.user_id && null !== args.following ? 'HAVING following = :following' : ''}
-          ORDER BY COUNT(DISTINCT followers.follower_id) DESC`;
-          return Sequelize
+          ORDER BY COUNT(DISTINCT followers.follower_id) DESC
+          `;
+
+          return Db.sequelize
           .query(
             query,
             {
@@ -80,7 +78,9 @@ module.exports = new GraphQLObjectType({
                 school : args.school_id,
                 search : args.search ? args.search.toLowerCase() : null
               },
-              type: Sequelize.QueryTypes.SELECT
+              type: Db.Sequelize.QueryTypes.SELECT,
+              model : Db.User,
+              mapToModel : true
             });
           }
         }
