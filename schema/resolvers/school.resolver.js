@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const { GraphQLObjectType, GraphQLList, GraphQLID } = graphql;
+const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLString } = graphql;
 const School = require('../defs/school.def');
 const Db = require('../../database/database');
 
@@ -15,9 +15,27 @@ module.exports = new GraphQLObjectType({
     },
     'schools': {
       type: new GraphQLList(School),
-      args: {university_id : {type: GraphQLID}},
+      args: {
+        university_id : {type: GraphQLID},
+        search : { type : GraphQLString }
+      },
       resolve(parent, args, context){
-        return Db.School.findAll({ raw : true, where : { university_id : args.university_id ? args.university_id : {[Db.Sequelize.Op.eq] : null}}} );
+        return Db.sequelize
+        .query(
+          `SELECT school.*
+          FROM school
+          WHERE
+          ${ !args.university_id ? 'school.university_id IS NULL' : 'school.university_id = :university' }
+          ${ args.search ? ' AND school.name LIKE :search' : ''}`,
+          {
+            replacements: {
+              university: args.university_id,
+              search : args.search ? args.search.toLowerCase() + '%' : null,
+            },
+            type: Db.Sequelize.QueryTypes.SELECT,
+            model : Db.School,
+            mapToModel : true
+          });
       }
     }
   }

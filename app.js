@@ -12,7 +12,6 @@ const configuration = process.env;
 const app = express();
 
 app.use(express.json());
-console.log(Db.User);
 app.post('/login', (req, res) => {
   Db.User.findOne({
     attributes:['id', 'firstname', 'lastname', 'email', 'type', 'password','isActive', 'classYear'],

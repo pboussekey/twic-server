@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLBoolean, GraphQLString } = graphql;
+const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLBoolean, GraphQLString, GraphQLInt } = graphql;
 const User = require('../defs/user.def');
 const Db = require('../../database/database');
 
@@ -39,11 +39,19 @@ module.exports = new GraphQLObjectType({
           following : {type : GraphQLBoolean },
           search : {type: GraphQLString},
           school_id : {type : GraphQLID},
-          user_id : { type : GraphQLID}
+          user_id : { type : GraphQLID},
+          major_id : { type : GraphQLID},
+          minor_id : { type : GraphQLID},
+          class_year : { type : GraphQLInt},
+          exclude_school : { type : new GraphQLList(GraphQLID)}
         },
         resolve(parent, args, context){
           var query =  `SELECT
-          user.*
+          user.*,
+          SUM(IF(followers.follower_id = :user, 1, 0)) > 0 as followed,
+          SUM(IF(followings.user_id = :user, 1, 0)) > 0 as following,
+          COUNT(DISTINCT followers.follower_id) as nbFollowers,
+          COUNT(DISTINCT followings.user_id) as nbFollowings
           FROM
           user
           LEFT JOIN user_followers as followers ON (user.id = followers.user_id)
@@ -58,8 +66,12 @@ module.exports = new GraphQLObjectType({
             `;
           }
           query += `WHERE user.deleted_at IS NULL AND user.id <> :user
-          ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE "%:search" OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE "%:search")'  : ''}
+          ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE :search)'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
+          ${args.exclude_school ? ' AND user.school_id NOT IN :exclude_school' : '' }
+          ${args.major_id ? ' AND user.major_id = :major' : ''}
+          ${args.minor_id ? ' AND user.minor_id = :minor' : ''}
+          ${args.class_year ? ' AND user.class_year = :class_year' : ''}
           GROUP BY user.id
           ${ !args.user_id && null !== args.follower ? 'HAVING followed = :follower' : ''}
           ${ !args.user_id && null !== args.following ? 'HAVING following = :following' : ''}
@@ -76,7 +88,11 @@ module.exports = new GraphQLObjectType({
                 follower : args.follower,
                 following : args.following,
                 school : args.school_id,
-                search : args.search ? args.search.toLowerCase() : null
+                search : args.search ? args.search.toLowerCase() + '%' : null,
+                major : args.major_id,
+                minor : args.minor_id,
+                exclude_school : args.exclude_school,
+                class_year : args.class_year
               },
               type: Db.Sequelize.QueryTypes.SELECT,
               model : Db.User,
