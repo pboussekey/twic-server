@@ -20,7 +20,6 @@ var PostDef = new GraphQLObjectType({
     user : {
       type : UserDef,
       resolve(parent, args){
-        console.log("CACHE?", parent);
         return Cache.get(Db.User, parent.user_id);
       }
     },

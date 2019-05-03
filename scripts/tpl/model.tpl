@@ -1,5 +1,6 @@
-const Db = require('./database');
+const Sequelize = require('sequelize');
+const sequelize = require('../database/sequelize');
 
-const {Name} = Db.sequelize.define('{Name}', {});
+const {Name} = sequelize.define('{name}', {});
 
 module.exports = {Name};

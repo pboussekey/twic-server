@@ -14,6 +14,7 @@ module.exports = new GraphQLObjectType({
     lastname: {type: GraphQLString},
     email: {type: new GraphQLNonNull(GraphQLString)},
     type: {type: new GraphQLNonNull(GraphQLString)},
+    degree: {type: GraphQLString},
     classYear: {type: GraphQLInt},
     isActive: {type: GraphQLBoolean},
     nbFollowers: {type: GraphQLInt},

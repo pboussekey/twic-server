@@ -14,14 +14,16 @@ module.exports = new GraphQLObjectType({
         major_id : { type :  GraphQLID },
         school_id : { type :  GraphQLID },
         classYear : { type :  GraphQLInt },
+        degree : { type :  GraphQLString },
         isActive : { type :  GraphQLBoolean },
       },
       resolve : (parent, args, context) =>
-      Db.User.model.update({
-        minor_id : args.minor_id,
-        major_id : args.major_id,
+      Db.User.update({
+        minor_id : args.minor_id > 0 ? args.minor_id : null,
+        major_id : args.major_id > 0 ? args.major_id : null,
         school_id : args.school_id,
         classYear : args.classYear,
+        degree : args.degree,
         isActive : args.isActive
       }, { where : { id : context.user.id}}).then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'An error occured'}))
@@ -31,7 +33,7 @@ module.exports = new GraphQLObjectType({
       args : {
         user_id : { type :  GraphQLID }
       },
-      resolve : (parent, args, context) => Db.UserFollowers.model
+      resolve : (parent, args, context) => Db.UserFollowers
       .create({ user_id : args.user_id, follower_id : context.user.id})
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Already followed'}))
@@ -42,7 +44,7 @@ module.exports = new GraphQLObjectType({
       args : {
         hashtag_id : { type :  GraphQLID }
       },
-      resolve : (parent, args, context) => Db.UserFollowers.model
+      resolve : (parent, args, context) => Db.UserFollowers
       .destroy({ where : { user_id : args.hashtag_id, follower_id : context.user.id} })
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Not followed'}))

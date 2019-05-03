@@ -2,7 +2,7 @@ const fs = require('fs');
 const _ = require('lodash');
 
 var _options = {
-  m : 'database/model',
+  m : './model',
   d : 'schema/def',
   r : 'schema/resolver',
   u : 'schema/mutator'
@@ -23,7 +23,7 @@ function createFromTpl(name, source, destination){
         process.exit(-1);
     }
   });
-  
+
   fs.readFile(source, "utf8", function(err, content) {
     content = content.replace(/{name}/g, name).replace(/{Name}/g, _.upperFirst(name));
     if(err){

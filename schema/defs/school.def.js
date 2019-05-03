@@ -9,6 +9,7 @@ var Def = new GraphQLObjectType({
   fields:  () => ({
     id: {type:new GraphQLNonNull(GraphQLID)},
     name: {type: GraphQLString},
+    type: {type: GraphQLString},
     logo:  {
       type : FileDef,
       resolve(parent, args){

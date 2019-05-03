@@ -5,6 +5,10 @@ const File = require('./file.model');
 const School = sequelize.define('school', {
   name: {
     type: Sequelize.STRING
+  },
+  degree: {
+    type: Sequelize.ENUM('UNIVERSITY', 'GRADUATE', 'UNDERGRADUATE'),
+    defaultValue: 'UNIVERSITY'
   }
 });
 

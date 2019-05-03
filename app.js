@@ -14,10 +14,10 @@ const app = express();
 app.use(express.json());
 app.post('/login', (req, res) => {
   Db.User.findOne({
-    attributes:['id', 'firstname', 'lastname', 'email', 'type', 'password','isActive', 'classYear'],
+    attributes:['id', 'firstname', 'lastname', 'email', 'type', 'password','isActive', 'classYear', 'degree'],
     include : [
       { model : Db.File, as : 'avatar', attributes : ['name', 'bucketname', 'token']},
-      { model : Db.School, attributes : ['id', 'name'],
+      { model : Db.School, as : 'school', attributes : ['id', 'name'],
         include : [
           { model : Db.School, as : 'university', attributes : ['id','name'],
               include : [{ model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}] },

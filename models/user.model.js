@@ -23,11 +23,12 @@ const User = sequelize.define('user', {
     type: Sequelize.INTEGER,
     underscored:true
   },
+  degree: {
+    type: Sequelize.ENUM('UNDERGRADUATE', 'GRADUATE'),
+  },
   type: {
-    type: Sequelize.STRING,
-    defaultValue: function() {
-      return "PERSONAL";
-    }
+    type: Sequelize.ENUM('PERSONAL', 'SCHOOL'),
+    defaultValue: 'PERSONAL'
   },
   isActive: {
     type: Sequelize.BOOLEAN,

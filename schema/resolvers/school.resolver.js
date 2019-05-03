@@ -17,7 +17,8 @@ module.exports = new GraphQLObjectType({
       type: new GraphQLList(School),
       args: {
         university_id : {type: GraphQLID},
-        search : { type : GraphQLString }
+        search : { type : GraphQLString },
+        degree : { type : GraphQLString }
       },
       resolve(parent, args, context){
         return Db.sequelize
@@ -26,10 +27,12 @@ module.exports = new GraphQLObjectType({
           FROM school
           WHERE
           ${ !args.university_id ? 'school.university_id IS NULL' : 'school.university_id = :university' }
+          ${ args.degree ? ' AND school.degree = :degree' : '' }
           ${ args.search ? ' AND school.name LIKE :search' : ''}`,
           {
             replacements: {
               university: args.university_id,
+              degree: args.degree,
               search : args.search ? args.search.toLowerCase() + '%' : null,
             },
             type: Db.Sequelize.QueryTypes.SELECT,

@@ -17,7 +17,8 @@ HashtagFollowers.belongsTo(User, { foreignKey: {
 
 HashtagFollowers.belongsTo(Hashtag, { foreignKey: {
   allowNull: false,
-  primaryKey: true
+  primaryKey: true,
+  name : 'hashtag_id'
 }});
 
 HashtagFollowers.removeAttribute('id');

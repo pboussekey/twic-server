@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const { GraphQLObjectType } = graphql;
+const { GraphQLObjectType, GraphQLNonNull, GraphQLID, GraphQLString } = graphql;
 
 module.exports = new GraphQLObjectType({
   name: `{Name}Def`,
