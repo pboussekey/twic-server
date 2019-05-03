@@ -1,6 +1,6 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLString, GraphQLNonNull, GraphQLID, GraphQLInt } = graphql;
-const {Name} = require('../../loaders/models.js')['{Name}'];
+const Db = require('../../database/database');
 const {Name}Def = require('../defs/{name}.def');
 const _ = require('lodash');
 
@@ -24,12 +24,12 @@ module.exports = new GraphQLObjectType({
       add{Name}: {
         type : {Name}Def,
         args : addArgs,
-        resolve : (parent, args) =>  {Name}.model.create(args)
+        resolve : (parent, args) =>  Db.{Name}.create(args)
       },
       update{Name}: {
         type : GraphQLInt,
         args : updateArgs,
-        resolve : (parent, args) =>  {Name}.model.update(args, { where : { id : args.id }}).then(([affectedCount]) => { {Name}.clear(args.id); return affectedCount; })
+        resolve : (parent, args) =>  Db.{Name}.update(args, { where : { id : args.id }}).then(([affectedCount]) => { {Name}.clear(args.id); return affectedCount; })
       }
     };
   }});

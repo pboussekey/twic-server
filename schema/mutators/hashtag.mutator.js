@@ -12,7 +12,7 @@ module.exports = new GraphQLObjectType({
       args : {
         hashtag_id : { type :  GraphQLID }
       },
-      resolve : (parent, args, context) => Db.HashtagFollowers
+      resolve : (parent, args, context) => Db.HashtagFollower
         .create({ hashtag_id : args.hashtag_id, follower_id : context.user.id})
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Already followed'}))
@@ -23,7 +23,7 @@ module.exports = new GraphQLObjectType({
       args : {
         hashtag_id : { type :  GraphQLID }
       },
-      resolve : (parent, args, context) => Db.HashtagFollowers
+      resolve : (parent, args, context) => Db.HashtagFollower
         .destroy({ where : { hashtag_id : args.hashtag_id, follower_id : context.user.id} })
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Not followed'}))

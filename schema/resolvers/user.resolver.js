@@ -58,15 +58,15 @@ module.exports = new GraphQLObjectType({
           FROM
           user
           JOIN school ON (user.school_id = school.id)
-          LEFT JOIN user_followers as followers ON (user.id = followers.user_id)
-          LEFT JOIN user_followers as followings ON (user.id = followings.follower_id)
+          LEFT JOIN user_follower as followers ON (user.id = followers.user_id)
+          LEFT JOIN user_follower as followings ON (user.id = followings.follower_id)
           `;
           if(args.user_id && args.follower){
-            query += `JOIN user_followers ON (user.id = user_followers.follower_id AND user_followers.user_id = :user_id)
+            query += `JOIN user_follower ON (user.id = user_follower.follower_id AND user_follower.user_id = :user_id)
             `;
           }
           else if(args.user_id && args.following){
-            query += `JOIN user_followers ON (user.id = user_followers.user_id AND user_followers.follower_id = :user_id)
+            query += `JOIN user_follower ON (user.id = user_follower.user_id AND user_follower.follower_id = :user_id)
             `;
           }
           else if(args.conversation_id){
@@ -74,7 +74,7 @@ module.exports = new GraphQLObjectType({
             `;
           }
           if(args.hashtag_id){
-            query += `JOIN hashtag_followers ON (user.id = hashtag_followers.follower_id AND hashtag_followers.hashtag_id = :hashtag)
+            query += `JOIN hashtag_follower ON (user.id = hashtag_follower.follower_id AND hashtag_follower.hashtag_id = :hashtag)
             `;
           }
           query += `WHERE user.deleted_at IS NULL AND user.id <> :user

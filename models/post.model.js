@@ -7,17 +7,21 @@ const File = require('./file.model');
 const Post = sequelize.define('post', {
   content: {
     type: Sequelize.TEXT
-  }
+  },
+  privacy: {
+    type: Sequelize.ENUM('PUBLIC', 'UNIVERSITY', 'CLASSYEAR', 'PEERS', 'WORLDWIDE', 'PRIVATE'),
+    defaultValue: 'PUBLIC'
+  },
 });
 
 Post.belongsTo(User, { foreignKey : 'user_id', as : 'user'});
 
 Post.belongsTo(Post, { foreignKey : 'post_id', as : 'post'});
 
-Hashtag.belongsToMany(Post, {through: 'post_hashtags'});
-Post.belongsToMany(Hashtag, {through: 'post_hashtags'});
+Hashtag.belongsToMany(Post, {through: 'post_hashtag'});
+Post.belongsToMany(Hashtag, {through: 'post_hashtag'});
 
-File.belongsToMany(Post, {through: 'post_files'});
-Post.belongsToMany(File, {through: 'post_files'});
+File.belongsToMany(Post, {through: 'post_file'});
+Post.belongsToMany(File, {through: 'post_file'});
 
 module.exports = Post;

@@ -53,8 +53,8 @@ User.belongsTo(Field, { foreignKey: 'major_id', as : 'major' });
 User.belongsTo(Field, { foreignKey: 'minor_id', as : 'minor' });
 User.belongsTo(File, { foreignKey : 'avatar_id', as : 'avatar'});
 
-User.belongsToMany(User, {through: 'user_followers', as : 'followers'});
-User.belongsToMany(User, {through: 'user_followers', as : 'followings', foreignKey : 'follower_id'});
+User.belongsToMany(User, {through: 'user_follower', as : 'followers'});
+User.belongsToMany(User, {through: 'user_follower', as : 'followings', foreignKey : 'follower_id'});
 
 
 module.exports = User;

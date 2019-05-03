@@ -27,20 +27,20 @@ module.exports = new GraphQLObjectType({
           else if(args.hashtag_id){
 
               query += `
-              LEFT JOIN post_hashtags ON (post.id = post_hashtags.post_id)
-              WHERE post_hashtags.hashtag_id = :hashtag_id
+              LEFT JOIN post_hashtags ON (post.id = post_hashtag.post_id)
+              WHERE post_hashtag.hashtag_id = :hashtag_id
               `;
           }
           else{
             query += `
-            LEFT JOIN post_hashtags ON (post.id = post_hashtags.post_id)
-            LEFT JOIN hashtag_followers ON (post_hashtags.hashtag_id = hashtag_followers.hashtag_id AND hashtag_followers.follower_id = :user)
-            LEFT JOIN user_followers ON (post.user_id = user_followers.user_id AND user_followers.follower_id = :user)
+            LEFT JOIN post_hashtag ON (post.id = post_hashtag.post_id)
+            LEFT JOIN hashtag_follower ON (post_hashtag.hashtag_id = hashtag_follower.hashtag_id AND hashtag_follower.follower_id = :user)
+            LEFT JOIN user_follower ON (post.user_id = user_follower.user_id AND user_follower.follower_id = :user)
             WHERE post.deleted_at IS NULL AND post.post_id IS NULL
               AND (
                 post.user_id = :user
-                OR hashtag_followers.follower_id IS NOT NULL
-                OR user_followers.follower_id IS NOT NULL
+                OR hashtag_follower.follower_id IS NOT NULL
+                OR user_follower.follower_id IS NOT NULL
             )
             `;
           }
@@ -54,7 +54,7 @@ module.exports = new GraphQLObjectType({
             replacements: { user: context.user.id, user_id : args.user_id, hashtag_id : args.hashtag_id },
             type: Db.Sequelize.QueryTypes.SELECT,
             model: Db.Post,
-            mapToModel: true 
+            mapToModel: true
           });
         }
       }
