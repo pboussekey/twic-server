@@ -67,6 +67,7 @@ exports.upload = functions.https.onRequest((req, res) => {
         ).then((uploadData) => res.status(201).json({
             filename : fileData.name,
             bucketname : encodeURIComponent(uploadData[0].name),
+            type : fileData.type,
             token : id
           })
         )

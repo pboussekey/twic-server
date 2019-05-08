@@ -20,8 +20,8 @@ module.exports = new GraphQLObjectType({
           COUNT(DISTINCT post.id) as nbPosts
           FROM
           user
-          LEFT JOIN user_followers as followers ON (user.id = followers.user_id)
-          LEFT JOIN user_followers as followings ON (user.id = followings.follower_id)
+          LEFT JOIN user_follower as followers ON (user.id = followers.user_id)
+          LEFT JOIN user_follower as followings ON (user.id = followings.follower_id)
           LEFT JOIN post ON (user.id = post.user_id)
           WHERE user.deleted_at IS NULL AND user.id = :user
           AND post.deleted_at IS NULL

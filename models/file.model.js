@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database/sequelize');
+const User = require('./user.model');
 
 const File = sequelize.define('file', {
     name: {
@@ -10,7 +11,11 @@ const File = sequelize.define('file', {
     },
     token: {
       type: Sequelize.STRING
+    },
+    type: {
+      type: Sequelize.STRING
     }
 });
+
 
 module.exports = File;

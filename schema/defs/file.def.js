@@ -7,5 +7,6 @@ module.exports = new GraphQLObjectType({
     id: {type:new GraphQLNonNull(GraphQLID)},
     name: {type: GraphQLString},
     bucketname: {type: GraphQLString},
-    token: {type: GraphQLString}
+    token: {type: GraphQLString},
+    type: {type: GraphQLString}
   }});
