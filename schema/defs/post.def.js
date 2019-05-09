@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const { GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLID, GraphQLNonNull, GraphQLList } = graphql;
+const { GraphQLObjectType, GraphQLString, GraphQLInt,  GraphQLNonNull, GraphQLList, GraphQLID } = graphql;
 const graphql_date = require('graphql-iso-date');
 const {
   GraphQLDateTime
@@ -33,34 +33,13 @@ var PostDef = new GraphQLObjectType({
       }
     },
     nbComments : {
-      type : GraphQLInt,
-      resolve(parent, args){
-        return Db.Post.count({
-           col : 'id',
-           distinct : true,
-           where : { post_id : parent.id }
-        });
-      }
+      type : GraphQLInt
     },
     nbLikes : {
-      type : GraphQLInt,
-      resolve(parent, args){
-        return Db.Like.count({
-           col : 'user_id',
-           distinct : true,
-           where : { post_id : parent.id }
-        });
-      }
+      type : GraphQLInt
     },
     isLiked : {
-      type : GraphQLInt,
-      resolve(parent, args, context){
-        return Db.Like.count({
-           col : 'user_id',
-           distinct : true,
-           where : { post_id : parent.id, user_id : context.user.id }
-        });
-      }
+      type : GraphQLInt
     }
   })
 });

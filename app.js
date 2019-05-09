@@ -85,13 +85,13 @@ app.post('/login', (req, res) => {
 
 
 
-  app.use(auth).use('/api', graphqlHTTP(req => { console.log(req.body); return ({
+  app.use(auth).use('/api', graphqlHTTP(req => ({
     schema,
     graphiql:true,
     context: {
       user: req.user
     }
-  })}));
+  })));
 
   app.listen(configuration.PORT, () => {
     console.log("SERVER STARTED");

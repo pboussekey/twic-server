@@ -36,8 +36,10 @@ module.exports = new GraphQLObjectType({
               });
             });
           }
+
           if(args.files){
             args.files.forEach(f =>
+              !f.id ?
               Db.File.create(
                 {
                   name : f.name,
@@ -46,10 +48,10 @@ module.exports = new GraphQLObjectType({
                   type : f.type,
                   user_id : context.user.id
                 })
-              .then(file => Db.PostFile.create({ post_id : post.id, file_id : file.id})));
-            }
-            return post;
-          })
+                .then(file => Db.PostFile.create({ post_id : post.id, file_id : file.id})) : Db.PostFile.create({ post_id : post.id, file_id : f.id}));
+              }
+              return post;
+            })
+          }
         }
-      }
-    });
+      });
