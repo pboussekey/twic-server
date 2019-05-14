@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const { GraphQLObjectType, GraphQLString, GraphQLInt,  GraphQLNonNull, GraphQLList, GraphQLID } = graphql;
+const { GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLBoolean,  GraphQLNonNull, GraphQLList, GraphQLID } = graphql;
 const graphql_date = require('graphql-iso-date');
 const {
   GraphQLDateTime
@@ -39,7 +39,7 @@ var PostDef = new GraphQLObjectType({
       type : GraphQLInt
     },
     isLiked : {
-      type : GraphQLInt
+      type : GraphQLBoolean
     }
   })
 });

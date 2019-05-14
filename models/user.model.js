@@ -16,6 +16,9 @@ const User = sequelize.define('user', {
     type: Sequelize.STRING,
     allowNull: false
   },
+  description: {
+    type: Sequelize.STRING,
+  },
   password: {
     type: Sequelize.STRING
   },
@@ -32,15 +35,16 @@ const User = sequelize.define('user', {
   },
   isActive: {
     type: Sequelize.BOOLEAN,
-    underscored:true
+    underscored:true,
+    defaultValue: false
   },
   followed: {
     type: Sequelize.VIRTUAL
   },
-  nbfollowers: {
+  nbFollowers: {
     type: Sequelize.VIRTUAL
   },
-  nbfollowings: {
+  nbFollowings: {
     type: Sequelize.VIRTUAL
   },
   nbPosts: {

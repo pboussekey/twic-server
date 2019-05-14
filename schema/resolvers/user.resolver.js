@@ -15,9 +15,9 @@ module.exports = new GraphQLObjectType({
           `SELECT
           user.*,
           SUM(IF(followers.follower_id = :user, 1, 0)) > 0 as followed,
-          COUNT(DISTINCT followers.follower_id) as nbFollowers,
-          COUNT(DISTINCT followings.user_id) as nbFollowings,
-          COUNT(DISTINCT post.id) as nbPosts
+          COALESCE(COUNT(DISTINCT followers.follower_id),0) as nbFollowers,
+          COALESCE(COUNT(DISTINCT followings.user_id),0) as nbFollowings,
+          COALESCE(COUNT(DISTINCT post.id),0) as nbPosts
           FROM
           user
           LEFT JOIN user_follower as followers ON (user.id = followers.user_id)
@@ -53,8 +53,8 @@ module.exports = new GraphQLObjectType({
           user.*,
           SUM(IF(followers.follower_id = :user, 1, 0)) > 0 as followed,
           SUM(IF(followings.user_id = :user, 1, 0)) > 0 as following,
-          COUNT(DISTINCT followers.follower_id) as nbFollowers,
-          COUNT(DISTINCT followings.user_id) as nbFollowings
+          COALESCE(COUNT(DISTINCT followers.follower_id),0) as nbFollowers,
+          COALESCE(COUNT(DISTINCT followings.user_id),0) as nbFollowings
           FROM
           user
           JOIN school ON (user.school_id = school.id)

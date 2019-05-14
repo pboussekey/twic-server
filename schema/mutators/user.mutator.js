@@ -1,8 +1,22 @@
 const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLString, GraphQLNonNull, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 const ResultDef = require('../defs/result.def');
+const FileInputDef = require('../defs/file_input.def');
 const Db = require('../../database/database');
 const _ = require('lodash');
+
+function updateUser(args, context){
+  console.log("COUCOU", args);
+  return  Db.User.update({
+    minor_id : args.minor_id > 0 ? args.minor_id : null,
+    major_id : args.major_id > 0 ? args.major_id : null,
+    school_id : args.school_id,
+    classYear : args.classYear,
+    degree : args.degree,
+    isActive : args.isActive
+  }, { where : { id : context.user.id}}).then(() => ({ success : true }))
+  .catch(() => ({ success : false, message : 'An error occured'}));
+}
 
 module.exports = new GraphQLObjectType({
   name: `UserMutator`,
@@ -16,17 +30,12 @@ module.exports = new GraphQLObjectType({
         classYear : { type :  GraphQLInt },
         degree : { type :  GraphQLString },
         isActive : { type :  GraphQLBoolean },
+        avatar : { type : FileInputDef }
       },
-      resolve : (parent, args, context) =>
-      Db.User.update({
-        minor_id : args.minor_id > 0 ? args.minor_id : null,
-        major_id : args.major_id > 0 ? args.major_id : null,
-        school_id : args.school_id,
-        classYear : args.classYear,
-        degree : args.degree,
-        isActive : args.isActive
-      }, { where : { id : context.user.id}}).then(() => ({ success : true }))
-      .catch(() => ({ success : false, message : 'An error occured'}))
+      resolve : function(parent, args, context){
+        return !args.avatar ? updateUser(args, context) : Db.File.create(args.avatar).then((avatar) => args.avatar_id = avatar.id && updateUser(args, context) );
+      }
+
     },
     followUser: {
       type : ResultDef,

@@ -10,12 +10,14 @@ const Like = sequelize.define('like', {},
 
 Like.belongsTo(Post, { foreignKey: {
   allowNull: false,
-  primaryKey: true
+  primaryKey: true,
+  name : 'post_id'
 }});
 
 Like.belongsTo(User, { foreignKey: {
   allowNull: false,
-  primaryKey: true
+  primaryKey: true,
+  name : 'user_id'
 }});
 
 Like.removeAttribute('id');

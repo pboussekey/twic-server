@@ -2,6 +2,7 @@ const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLString, GraphQLNonNull, GraphQLID, GraphQLInt } = graphql;
 const Db = require('../../database/database');
 const PostDef = require('../defs/post.def');
+const ResultDef = require('../defs/result.def');
 const FileInputDef = require('../defs/file_input.def');
 const _ = require('lodash');
 
@@ -12,11 +13,12 @@ module.exports = new GraphQLObjectType({
       type : PostDef,
       args : {
         content : { type :  GraphQLString },
+        parent_id : { type :  GraphQLID },
         privacy : { type :  GraphQLString, default : "PUBLIC" },
         files : { type :  new GraphQLList(FileInputDef) },
       },
       resolve : (parent, args, context) =>
-      Db.Post.create({content : args.content, privacy : args.privacy, user_id : context.user.id})
+      Db.Post.create({content : args.content, privacy : args.privacy, user_id : context.user.id, parent_id : args.parent_id})
       .then(function(post){
         if(post.content){
           var hashtagRegex = /#[A-Za-z0-9]+/g;
@@ -52,6 +54,26 @@ module.exports = new GraphQLObjectType({
               }
               return post;
             })
+          },
+          likePost : {
+            type : ResultDef,
+            args : {
+              post_id : { type :  GraphQLID },
+            },
+            resolve : (parent, args, context) => Db.Like
+              .create({ post_id : args.post_id, user_id : context.user.id})
+            .then(() => ({ success : true }))
+            .catch((error) => ({ success : false, message : 'Already liked'}))
+          },
+          unlikePost : {
+            type : ResultDef,
+            args : {
+              post_id : { type :  GraphQLID },
+            },
+            resolve : (parent, args, context) => Db.Like
+              .destroy({ post_id : args.post_id, user_id : context.user.id})
+            .then(() => ({ success : true }))
+            .catch(() => ({ success : false, message : 'Not liked'}))
           }
         }
       });

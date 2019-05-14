@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const { GraphQLObjectType, GraphQLList, GraphQLID } = graphql;
+const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLInt } = graphql;
 const Post = require('../defs/post.def');
 const Db = require('../../database/database');
 
@@ -8,17 +8,23 @@ module.exports = new GraphQLObjectType({
   fields: {
     posts: {
       type: new GraphQLList(Post),
-      args: {user_id : {type: GraphQLID}, hashtag_id : {type: GraphQLID}, parent_id : {type: GraphQLID}},
+      args: {
+        user_id : {type: GraphQLID},
+        hashtag_id : {type: GraphQLID},
+        parent_id : {type: GraphQLID},
+        count : { type : GraphQLInt},
+        page : { type : GraphQLInt},
+      },
       resolve(parent, args, context){
         var query = `SELECT
             post.*,
-            SUM(IF(\`like\`.user_id = :user, 1, 0)) > 0 as isLiked,
-            SUM(IF(\`like\`.user_id IS NOT NULL, 1, 0)) as nbLikes,
-            SUM(IF(comment.id IS NOT NULL, 1, 0)) as nbComments
+            COALESCE(likes.isLiked,false) as isLiked,
+            COALESCE(likes.nbLikes,0) as nbLikes,
+            COALESCE(comments.nbComments,0) as nbComments
           FROM
             post
-            LEFT JOIN \`like\` ON (post.id = \`like\`.post_id)
-            LEFT JOIN post as comment  ON (post.id = comment.parent_id)
+            LEFT JOIN (SELECT post_id, COUNT(user_id) as nbLikes, SUM(IF(\`like\`.user_id = :user, 1, 0)) > 0 as isLiked FROM  \`like\` GROUP BY post_id) AS likes  ON (post.id = likes.post_id)
+            LEFT JOIN (SELECT parent_id, COUNT(comment.id) as nbComments FROM  post as comment WHERE comment.deleted_at IS NULL GROUP BY parent_id) as comments  ON (post.id = comments.parent_id)
           `;
           if(args.user_id){
               query += `WHERE post.user_id = :user_id
@@ -32,7 +38,6 @@ module.exports = new GraphQLObjectType({
               `;
           }
           else if(args.parent_id){
-
               query += `
               WHERE post.parent_id = :parent
               `;
@@ -51,7 +56,8 @@ module.exports = new GraphQLObjectType({
             `;
           }
           query += `GROUP BY post.id
-          ORDER BY post.created_at DESC`;
+          ORDER BY post.created_at ${args.parent_id ? 'ASC' : 'DESC'}
+          LIMIT ${(args.count || 10) * (args.page || 0)},${args.count || 10}`;
 
         return Db.sequelize
         .query(

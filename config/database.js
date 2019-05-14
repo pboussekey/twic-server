@@ -6,7 +6,7 @@ module.exports = {
   "database": config.DB_NAME,
   "host": config.DB_HOST,
   "dialect": config.DB_DIALECT || "mariadb",
-  "logging": false,
+  "logging": config.APP_MODE === 'dev' ? console.log : false,
   "define" : {
     freezeTableName: true,
     paranoid: true,
