@@ -1,4 +1,5 @@
 require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
+process.setMaxListeners(0);
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/root.schema');
@@ -7,6 +8,11 @@ const bcrypt = require('bcrypt');
 const jsonwebtoken = require('jsonwebtoken');
 const firebase = require('./firebase/firebase');
 const Db = require('./database/database');
+
+const  { SubscriptionServer } = require('subscriptions-transport-ws');
+const { execute, subscribe } = require('graphql');
+const subscriptionsEndpoint = `ws://localhost:3000/subscriptions`;
+const {createServer} = require('http');
 
 const configuration = process.env;
 const app = express();
@@ -88,6 +94,7 @@ app.post('/login', (req, res) => {
   app.use(auth).use('/api', graphqlHTTP(req => ({
     schema,
     graphiql:true,
+    subscriptionsEndpoint: subscriptionsEndpoint,
     context: {
       user: req.user
     }
@@ -95,4 +102,21 @@ app.post('/login', (req, res) => {
 
   app.listen(configuration.PORT, () => {
     console.log("SERVER STARTED");
+  });
+
+
+  const ws = createServer(app);
+
+  ws.listen(configuration.SOCKET_PORT, () => {
+      console.log(`GraphQL is now running on http://localhost:${configuration.SOCKET_PORT}`);
+      const subscriptionServer = new SubscriptionServer({
+            execute,
+            subscribe,
+            schema
+        }, {
+            server: ws,
+            reconnect: true,
+            path: '/subscriptions',
+        });
+
   });

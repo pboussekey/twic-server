@@ -1,12 +1,7 @@
 require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
-const User = require('./../database/models/user.model');
-const Post = require('./../database/models/post.model');
-const School = require('./../database/models/school.model');
+const Cache = require('./../database/cache');
 
-const Models = require('../_models');
-const _ = require('lodash');
-
-_.forIn(Models, M => { console.log("CLEAR CACHE",M.model.name); M.clearAll();});
+Cache.clear();
 
 
 process.exit(0);

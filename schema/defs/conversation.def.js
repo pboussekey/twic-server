@@ -6,6 +6,7 @@ const {
 } = graphql_date;
 const UserDef = require('./user.def');
 const Db = require('../../database/database');
+const FileDef = require('./file.def.js');
 
 module.exports = new GraphQLObjectType({
   name: `ConversationDef`,
@@ -15,6 +16,12 @@ module.exports = new GraphQLObjectType({
     last: {type: GraphQLString},
     lastDate: {
       type: GraphQLDateTime
+    },
+    picture : {
+      type : FileDef,
+      resolve(parent, args){
+        return Cache.get(Db.File, parent.file_id);
+      }
     },
     users : {
       type: GraphQLList(UserDef),

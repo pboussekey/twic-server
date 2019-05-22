@@ -10,7 +10,6 @@ const Message = sequelize.define('message', {
   }
 });
 
-
 Message.belongsTo(File, { foreignKey: {
   name : 'file_id',
   allowNull: true
@@ -23,6 +22,17 @@ Message.belongsTo(Conversation, { foreignKey: {
   name : 'conversation_id',
   allowNull: false
 }});
+
+Message.beforeCreate(function(message){
+  const ConversationUser = require('./conversation_user.model');
+  return ConversationUser.findOne(
+    {where : { user_id : message.user_id, conversation_id : message.conversation_id}}
+  ).then(function(conversation_user){
+    if(!conversation_user){
+       return Promise.reject("Not allowed.");
+    }
+  });
+});
 
 
 module.exports = Message;

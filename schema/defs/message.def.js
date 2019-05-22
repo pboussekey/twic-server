@@ -24,7 +24,7 @@ module.exports = new GraphQLObjectType({
         return Cache.get(Db.User, parent.user_id);
       }
     },
-    file : {
+    attachment : {
       type : FileDef,
       resolve(parent, args){
         return Cache.get(Db.File, parent.file_id);

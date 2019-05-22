@@ -11,18 +11,20 @@ const ConversationUser = sequelize.define('conversation_user',
 
 
 ConversationUser.belongsTo(Message, { foreignKey: {
-  allowNull: false,
-  primaryKey: true
+  allowNull: true,
+  name : 'message_id'
 }});
 
 ConversationUser.belongsTo(User, { foreignKey: {
   allowNull: false,
-  primaryKey: true
+  primaryKey: true,
+  name : 'user_id'
 }});
 
 ConversationUser.belongsTo(Conversation, { foreignKey: {
   allowNull: false,
-  primaryKey: true
+  primaryKey: true,
+  name : 'conversation_id'
 }});
 
 ConversationUser.removeAttribute('id');
