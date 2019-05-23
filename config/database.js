@@ -9,7 +9,7 @@ module.exports = {
   "dialectOptions": {
     timezone: 'Etc/GMT+0',
   },
-  "logging": config.APP_MODE === 'dev' ? false : false,
+  "logging": config.APP_MODE === 'dev' ? console.log : false,
   "define" : {
     freezeTableName: true,
     paranoid: true,

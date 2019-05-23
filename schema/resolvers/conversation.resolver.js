@@ -19,6 +19,7 @@ module.exports = new GraphQLObjectType({
             JOIN conversation_user ON (conversation.id = conversation_user.conversation_id AND conversation_user.user_id = :user)
             JOIN (SELECT message.conversation_id, MAX(id) as id FROM message GROUP BY message.conversation_id) as last ON (conversation_user.conversation_id = last.conversation_id)
             JOIN message ON (last.id = message.id)
+            GROUP BY conversation.id
           `;
 
         return Db.sequelize

@@ -18,6 +18,7 @@ module.exports = new GraphQLObjectType({
     createdAt: {
       type: GraphQLDateTime
     },
+    conversation_id: {type:GraphQLID},
     user : {
       type : UserDef,
       resolve(parent, args){

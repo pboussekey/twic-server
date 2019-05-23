@@ -7,6 +7,7 @@ const {
 const UserDef = require('./user.def');
 const Db = require('../../database/database');
 const FileDef = require('./file.def.js');
+const Cache = require('../../database/cache');
 
 module.exports = new GraphQLObjectType({
   name: `ConversationDef`,

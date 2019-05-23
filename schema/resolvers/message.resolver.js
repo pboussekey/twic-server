@@ -15,13 +15,14 @@ module.exports = new GraphQLObjectType({
           FROM
             message
             JOIN conversation_user ON (conversation_user.conversation_id = message.conversation_id AND conversation_user.user_id = :user)
+          WHERE message.conversation_id = :conversation
           ORDER BY message.id`;
 
         return Db.sequelize
         .query(
           query,
           {
-            replacements: { user: context.user.id, conversation_id : args.conversation_id },
+            replacements: { user: context.user.id, conversation : args.conversation_id },
             type: Db.Sequelize.QueryTypes.SELECT,
             model: Db.Message,
             mapToModel: true
