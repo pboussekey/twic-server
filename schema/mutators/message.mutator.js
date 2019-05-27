@@ -61,7 +61,6 @@ module.exports = new GraphQLObjectType({
         users : { type : GraphQLList(GraphQLID)}
       },
       resolve : function(parent, args, context){
-        console.log(args);
         if(args.conversation_id){
           return createMessage(args, context);
         }
