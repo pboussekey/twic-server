@@ -9,16 +9,14 @@ function _createConversation(args, context){
     name : args.name,
     picture_id : args.picture_id
   }).then(function(conversation){
-
     if(args.users){
       args.users.push(context.user.id);
-      console.log(args.users);
       return Promise.all(
         args.users.map((user) =>
           Db.ConversationUser.create(
             {conversation_id : conversation.id,
               user_id : user
-            }).then(() => console.log("!!!")))).then(function(args){   console.log("CONV?", args, conversation); return conversation;});
+            }))).then(() =>  conversation);
     }
     return conversation;
   })
@@ -26,7 +24,9 @@ function _createConversation(args, context){
 }
 
 function createConversation(args, context){
+  console.log(args);
  return !args.picture ? _createConversation(args, context) :   Db.File.create(args.picture).then(function(picture){
+      console.log("PICTURE", picture);
       args.picture_id = picture.id;
       return _createConversation(args, context) ;
     });

@@ -70,7 +70,9 @@ app.post('/login', (req, res) => {
   const auth = jwt({
     secret: configuration.AUTH_SECRET
   });
-
+  bcrypt.hash("twic", 10, function(err, hash) {
+    console.log(hash)
+  });
 
   app.post('/schools', (req, res) => { console.log(req);
     return Db.School

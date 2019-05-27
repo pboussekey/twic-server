@@ -78,7 +78,8 @@ module.exports = new GraphQLObjectType({
             `;
           }
           query += `WHERE user.deleted_at IS NULL AND user.id <> :user
-          ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE :search)'  : ''}
+          ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE :search'  : ''}
+          ${args.search ? ' OR LCASE(CONCAT(user.firstname,  user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname,  user.firstname)) LIKE :search)'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
           ${args.university_id ? ' AND school.university_id = :university' : '' }
           ${args.exclude_school ? ' AND user.school_id NOT IN :exclude_school' : '' }

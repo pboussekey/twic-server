@@ -12,7 +12,7 @@ const Cache = require('../../database/cache');
 module.exports = new GraphQLObjectType({
   name: `ConversationDef`,
   fields:  {
-    id: {type:new GraphQLNonNull(GraphQLID)},
+    id: {type: new GraphQLNonNull(GraphQLID)},
     name: {type: GraphQLString},
     last: {type: GraphQLString},
     lastDate: {
@@ -21,7 +21,7 @@ module.exports = new GraphQLObjectType({
     picture : {
       type : FileDef,
       resolve(parent, args){
-        return Cache.get(Db.File, parent.file_id);
+        return Cache.get(Db.File, parent.picture_id);
       }
     },
     users : {
