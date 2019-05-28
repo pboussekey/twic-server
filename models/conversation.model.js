@@ -22,7 +22,8 @@ Conversation.belongsTo(File, { foreignKey: {
 
 Conversation.belongsTo(Hashtag, { foreignKey: {
   name : 'hashtag_id',
-  allowNull: true
+  allowNull: true,
+  unique: true
 }});
 
 

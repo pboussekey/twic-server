@@ -63,7 +63,7 @@ module.exports = new GraphQLObjectType({
             break;
             case "CHANNEL":
                 query += `
-                  AND conversation.name IS NULL AND conversation.hashtag_id IS NULL
+                  AND conversation.name IS NULL AND conversation.hashtag_id IS NOT NULL
                 `;
             break;
 
