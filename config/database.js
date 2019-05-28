@@ -7,7 +7,7 @@ module.exports = {
   "host": config.DB_HOST,
   "dialect": config.DB_DIALECT || "mariadb",
   "dialectOptions": {
-    timezone: 'local/Z',
+    timezone: "'local'/'Z'",
   },
   "logging": config.APP_MODE === 'dev' ? console.log : false,
   "define" : {
