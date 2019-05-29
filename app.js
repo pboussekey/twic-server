@@ -1,4 +1,6 @@
-require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
+if(process.env.NODE_ENV){
+  require('dotenv').config({ path: './envs/' + process.env.NODE_ENV + '.env' });
+}
 process.setMaxListeners(0);
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
