@@ -67,6 +67,7 @@ app.post('/requestLink', (req, res) => {
         return request.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${configuration.FB_APIKEY}`, {
             json: payload
           }, (error, res, body) => {
+            console.log(error, res, body);
             if (error) {
               return res.status(400).json({
                 type : 'error',
