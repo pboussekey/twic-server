@@ -9,11 +9,11 @@ const uuid = require('uuid/v4');
 
 const configPath = './config/gc.json';
 const gcconfig = {
-  projectId: 'twicfiles',
+  projectId: 'twicapp',
   keyFileName: configPath
 };
 const fbconfig = {
-  apiKey: 'AIzaSyAB_Xk8PfntqGQ47KtyUDuJFLCHlKpZG0Y',
+  apiKey: 'AIzaSyDcNKi1wey5Dif8m2W-np7VRKkH5O_aRNI',
   databaseURL: 'https://twicapp-5d95f.firebaseio.com'
 };
 
@@ -49,7 +49,7 @@ exports.upload = functions.https.onRequest((req, res) => {
     });
 
     busboy.on('finish', ()   => {
-      const bucket = gcs.bucket('twicfiles-ccf31.appspot.com');
+      const bucket = gcs.bucket('twicapp-5d95f.appspot.com');
       const id = uuid();
       let filePath = user + '/' + id + '-' + fileData.name;
       firebase.auth().signInWithCustomToken(token).then(

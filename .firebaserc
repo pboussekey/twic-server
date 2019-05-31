@@ -1,5 +1,6 @@
 {
   "projects": {
-    "twic-files": "twicfiles-ccf31"
+    "twic-files": "twicfiles-ccf31",
+    "default": "twicfiles-ccf31"
   }
 }

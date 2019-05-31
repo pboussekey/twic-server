@@ -7,9 +7,12 @@ const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/root.schema');
 var jwt = require('express-jwt');
 const bcrypt = require('bcrypt');
+const uuidv4 = require('uuid/v4');
 const jsonwebtoken = require('jsonwebtoken');
 const firebase = require('./firebase/firebase');
 const Db = require('./database/database');
+const request = require('request');
+const mail = require('./services/mail');
 
 const  { SubscriptionServer } = require('subscriptions-transport-ws');
 const { execute, subscribe } = require('graphql');
@@ -20,26 +23,102 @@ const configuration = process.env;
 const app = express();
 
 app.use(express.json());
+
+app.get('/authentication/', (req, res) => {
+  var token = req.query.token;
+  Db.MagicLink.findOne({
+    where : {
+      magic_token : token
+    }
+  }).then((magic_link) => {
+    if(magic_link){
+      return Db.MagicLink.update({
+        token_checked : true
+      }, { where : { id : magic_link.id}}).then(() => res.json({ status : "Authentified" }));
+    }
+    else{
+      return res.status(400).json({
+        type : 'error',
+        error : 'Token not found'
+      });
+    }
+  });
+});
+
+app.post('/requestLink', (req, res) => {
+  console.log(req.body);
+  var users = Array.isArray(req.body.email) ? req.body.email : [req.body.email];
+  var promises = [];
+  var result = 0;
+  users.forEach(function(email){
+    var promise = new Promise(function(resolve, reject) { Db.User.findOne({
+      where : { email : email.trim() }
+    }).then(function(user){
+      if(user){
+        var magic_token = uuidv4();
+        var request_token = uuidv4();
+        Db.MagicLink.create({ magic_token : magic_token, request_token : request_token, user_id : user.id  });
+        var payload={
+          "longDynamicLink": `https://twicapp.page.link/?link=${configuration.APP_HOST}/authentication/?token=${magic_token}&apn=io.twic.app`,
+          "suffix":{
+              "option":"UNGUESSABLE"
+          },
+        };
+        return request.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${configuration.FB_APIKEY}`, {
+            json: payload
+          }, (error, res, body) => {
+            if (error) {
+              return res.status(400).json({
+                type : 'error',
+                error : 'user_not_found'
+              });
+            }
+
+            result = users.length == 1 ? request_token : result + 1;
+            mail.send('Twic activation', body['shortLink'], email.trim());
+            resolve(result);
+          });
+        }
+        else{
+          return res.status(400).json({
+            type : 'error',
+            error : 'user_not_found'
+          });
+        }
+      })});
+
+      promises.push(promise);
+    });
+    return Promise.all(promises).then(function(){ console.log("ALLO?"); return res.json({ request_token : result});} );
+
+});
+
 app.post('/login', (req, res) => {
-  Db.User.findOne({
-    attributes:['id', 'firstname', 'lastname', 'email', 'type', 'password','isActive', 'classYear', 'degree'],
+  var request_token = req.body.request_token ? req.body.request_token.trim() : null;
+  var magic_token = req.body.magic_token ? req.body.magic_token.trim() : null;
+  Db.MagicLink.findOne({
     include : [
-      { model : Db.File, as : 'avatar', attributes : ['name', 'bucketname', 'token']},
-      { model : Db.School, as : 'school', attributes : ['id', 'name'],
+      { model : Db.User, as : 'user',
+        attributes:['id', 'firstname', 'lastname', 'email', 'type', 'isActive', 'classYear', 'degree'],
         include : [
-          { model : Db.School, as : 'university', attributes : ['id','name'],
-              include : [{ model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}] },
-          { model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}
-        ]
-      },
-      { model : Db.Field, as : 'major', attributes : ['id', 'name'] },
-      { model : Db.Field, as : 'minor', attributes : ['id', 'name']  }
+          { model : Db.File, as : 'avatar', attributes : ['name', 'bucketname', 'token']},
+          { model : Db.School, as : 'school', attributes : ['id', 'name'],
+            include : [
+              { model : Db.School, as : 'university', attributes : ['id','name'],
+                  include : [{ model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}] },
+              { model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}
+            ]
+          },
+          { model : Db.Field, as : 'major', attributes : ['id', 'name'] },
+          { model : Db.Field, as : 'minor', attributes : ['id', 'name']  }
+      ]
+    }
     ],
     where:{
-      email: req.body.email.trim()
+      [Db.Sequelize.Op.or]: [ { request_token : request_token, token_checked : true }, { magic_token : magic_token} ]
     }
-  }).then(user => {
-    user = JSON.parse(JSON.stringify(user));
+  }).then(magic_link => {
+    user = JSON.parse(JSON.stringify(magic_link.user));
     if (!user) {
       return res.status(400).json({
         type : 'error',
@@ -47,33 +126,22 @@ app.post('/login', (req, res) => {
         body : req.body
       });
     }
-    bcrypt.compare(req.body.password.trim(), user.password).then(function(valid){
-      if (!valid) {
 
-        return res.status(400).json({
-          type : 'error',
-          error : 'invalid_pwd'
-        });
-      }
-      user.password = null;
+    Db.MagicLink.destroy({ where : { id : magic_link.id } });
       // signin user and generate a jwt
-      const token = jsonwebtoken.sign({
-        id: user.id
-      }, configuration.AUTH_SECRET, { expiresIn: '1y' });
-      return firebase.getToken().then(fbToken => res.json({
-        user: user,
-        token: token,
-        fbtoken : fbToken
-      }));
+    const token = jsonwebtoken.sign({
+      id: user.id
+    }, configuration.AUTH_SECRET, { expiresIn: '1y' });
+    return firebase.getToken().then(fbToken => res.json({
+      user: user,
+      token: token,
+      fbtoken : fbToken
+    }));
 
-    });
   })});
 
   const auth = jwt({
     secret: configuration.AUTH_SECRET
-  });
-  bcrypt.hash("twic", 10, function(err, hash) {
-    console.log(hash)
   });
 
   app.post('/schools', (req, res) => { console.log(req);

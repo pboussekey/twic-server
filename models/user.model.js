@@ -19,9 +19,6 @@ const User = sequelize.define('user', {
   description: {
     type: Sequelize.STRING,
   },
-  password: {
-    type: Sequelize.STRING
-  },
   classYear: {
     type: Sequelize.INTEGER,
     underscored:true
