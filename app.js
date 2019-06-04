@@ -45,58 +45,74 @@ app.get('/authentication/', (req, res) => {
   });
 });
 
+function sendMagicLink(email, request_token,  magic_token, resolve){
+  var payload={
+    "longDynamicLink": `https://twicapp.page.link/?link=${configuration.APP_HOST}/authentication/?token=${magic_token}&apn=io.twic.app`,
+    "suffix":{
+        "option":"UNGUESSABLE"
+    },
+  };
+  return request.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${configuration.FB_APIKEY}`, {
+      json: payload
+    }, (error, res, body) => {
+      if (error) {
+        return res.status(400).json({
+          type : 'error',
+          error : 'user_not_found'
+        });
+      }
+      mail.send('Twic activation', body['shortLink'], email.trim());
+      console.log(request_token);
+      resolve(request_token);
+    });
+}
+
 app.post('/requestLink', (req, res) => {
-  console.log(req.body);
   var users = Array.isArray(req.body.email) ? req.body.email : [req.body.email];
   var promises = [];
   var result = 0;
+  var magic_token = uuidv4();
+  var request_token = uuidv4();
   users.forEach(function(email){
     var promise = new Promise(function(resolve, reject) { Db.User.findOne({
       where : { email : email.trim() }
     }).then(function(user){
       if(user){
-        var magic_token = uuidv4();
-        var request_token = uuidv4();
-        Db.MagicLink.create({ magic_token : magic_token, request_token : request_token, user_id : user.id  });
-        var payload={
-          "longDynamicLink": `https://twicapp.page.link/?link=${configuration.APP_HOST}/authentication/?token=${magic_token}&apn=io.twic.app`,
-          "suffix":{
-              "option":"UNGUESSABLE"
-          },
-        };
-        return request.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${configuration.FB_APIKEY}`, {
-            json: payload
-          }, (error, res, body) => {
-            console.log(error, res, body);
-            if (error) {
+        Db.MagicLink.findOne({
+          where : { user_id : user.id }
+        }).then(function(magic_link){
+          if(magic_link){
+            magic_token = magic_link.magic_token;
+            request_token = magic_link.request_token;
+            sendMagicLink(email, magic_link.request_token, magic_link.magic_token, resolve);
+          }
+          else{
+            Db.MagicLink.create({ magic_token : magic_token, request_token : request_token, user_id : user.id  });
+            sendMagicLink(email, request_token, magic_token, resolve);
+
+            }
+          });
+        }
+            else{
               return res.status(400).json({
                 type : 'error',
                 error : 'user_not_found'
               });
             }
-
-            result = users.length == 1 ? request_token : result + 1;
-            mail.send('Twic activation', body['shortLink'], email.trim());
-            resolve(result);
           });
-        }
-        else{
-          return res.status(400).json({
-            type : 'error',
-            error : 'user_not_found'
-          });
-        }
-      })});
+        });
 
-      promises.push(promise);
+        promises.push(promise);
+
     });
-    return Promise.all(promises).then(function(){ console.log("ALLO?"); return res.json({ request_token : result});} );
+    return Promise.all(promises).then(function(){ console.log("ALLO?"); return res.json({ request_token : request_token});} );
 
 });
 
 app.post('/login', (req, res) => {
   var request_token = req.body.request_token ? req.body.request_token.trim() : null;
   var magic_token = req.body.magic_token ? req.body.magic_token.trim() : null;
+  console.log(request_token, magic_token);
   Db.MagicLink.findOne({
     include : [
       { model : Db.User, as : 'user',
@@ -119,7 +135,7 @@ app.post('/login', (req, res) => {
       [Db.Sequelize.Op.or]: [ { request_token : request_token, token_checked : true }, { magic_token : magic_token} ]
     }
   }).then(magic_link => {
-    user = JSON.parse(JSON.stringify(magic_link.user));
+    user = magic_link ? JSON.parse(JSON.stringify(magic_link.user)) : null;
     if (!user) {
       return res.status(400).json({
         type : 'error',
