@@ -46,7 +46,9 @@ module.exports = new GraphQLObjectType({
           major_id : { type : GraphQLID},
           minor_id : { type : GraphQLID},
           class_year : { type : GraphQLInt},
-          exclude_school : { type : new GraphQLList(GraphQLID)}
+          exclude_school : { type : new GraphQLList(GraphQLID)},
+          count : { type : GraphQLInt},
+          page : { type : GraphQLInt},
         },
         resolve(parent, args, context){
           var query =  `SELECT
@@ -81,7 +83,7 @@ module.exports = new GraphQLObjectType({
           ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE :search'  : ''}
           ${args.search ? ' OR LCASE(CONCAT(user.firstname,  user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname,  user.firstname)) LIKE :search)'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
-          ${args.university_id ? ' AND school.university_id = :university' : '' }
+          ${args.university_id ? ' AND (school.university_id = :university OR (school.university_id IS NULL AND school.id = :university))'  : '' }
           ${args.exclude_school ? ' AND user.school_id NOT IN :exclude_school' : '' }
           ${args.major_id && !args.minor_id ? ' AND user.major_id = :major' : ''}
           ${args.minor_id && !args.major_id ? ' AND user.minor_id = :minor' : ''}
@@ -91,7 +93,7 @@ module.exports = new GraphQLObjectType({
           ${ !args.user_id && null !== args.follower ? 'HAVING followed = :follower' : ''}
           ${ !args.user_id && null !== args.following ? 'HAVING following = :following' : ''}
           ORDER BY COUNT(DISTINCT followers.follower_id) DESC
-          `;
+          LIMIT ${(args.count || 10) * (args.page || 0)},${args.count || 10}`;
 
           return Db.sequelize
           .query(

@@ -26,7 +26,7 @@ module.exports = new GraphQLObjectType({
           `SELECT school.*
           FROM school
           WHERE
-          ${ !args.university_id ? 'school.university_id IS NULL' : 'school.university_id = :university' }
+          ${ !args.university_id ? '1' : 'school.university_id = :university' }
           ${ args.degree ? ' AND school.degree = :degree' : '' }
           ${ args.search ? ' AND school.name LIKE :search' : ''}`,
           {
