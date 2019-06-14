@@ -2,15 +2,17 @@ const graphql = require('graphql');
 const { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLString } = graphql;
 const School = require('../defs/school.def');
 const Db = require('../../database/database');
+const Cache = require('../../database/cache');
 
 module.exports = new GraphQLObjectType({
   name: `SchoolResolver`,
   fields: {
     'school': {
-      type: new GraphQLList(School),
+      type: School,
       args: {id : {type: GraphQLID}},
       resolve(parent, args, context){
-        return Db.School.get(args.id);
+        console.log("??");
+        return Cache.get(Db.School,args.id);
       }
     },
     'schools': {

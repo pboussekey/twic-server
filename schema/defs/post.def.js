@@ -6,6 +6,7 @@ const {
 } = graphql_date;
 const UserDef = require('./user.def.js');
 const FileDef = require('./file.def.js');
+const HashtagDef = require('./hashtag.def.js');
 const Db = require('../../database/database');
 const Cache = require('../../database/cache');
 
@@ -27,6 +28,15 @@ var PostDef = new GraphQLObjectType({
       type : new GraphQLList(FileDef),
       resolve(parent, args){
         return Db.File.findAll({
+            raw : true,
+            include: [{ model : Db.Post, attributes : [], where : { id : parent.id }}]
+        });
+      }
+    },
+    hashtags : {
+      type : new GraphQLList(HashtagDef),
+      resolve(parent, args){
+        return Db.Hashtag.findAll({
             raw : true,
             include: [{ model : Db.Post, attributes : [], where : { id : parent.id }}]
         });
