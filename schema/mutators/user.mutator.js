@@ -74,10 +74,10 @@ module.exports = new GraphQLObjectType({
     unfollowUser: {
       type : ResultDef,
       args : {
-        hashtag_id : { type :  GraphQLID }
+        user_id : { type :  GraphQLID }
       },
       resolve : (parent, args, context) => Db.UserFollower
-      .destroy({ where : { user_id : args.hashtag_id, follower_id : context.user.id} })
+      .destroy({ where : { user_id : args.user_id, follower_id : context.user.id} })
       .then(() => ({ success : true }))
       .catch(() => ({ success : false, message : 'Not followed'}))
     }

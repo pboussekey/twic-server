@@ -119,12 +119,9 @@ app.post('/login', (req, res) => {
         attributes:['id', 'firstname', 'lastname', 'email', 'type', 'isActive', 'classYear', 'degree'],
         include : [
           { model : Db.File, as : 'avatar', attributes : ['name', 'bucketname', 'token']},
-          { model : Db.School, as : 'school', attributes : ['id', 'name'],
-            include : [
-              { model : Db.School, as : 'university', attributes : ['id','name'],
-                  include : [{ model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}] },
-              { model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}
-            ]
+          { model : Db.School, as : 'school', attributes : ['id', 'name']},
+          { model : Db.School, as : 'university', attributes : ['id', 'name'],
+            include : [{ model : Db.File, as : 'logo', attributes : ['name', 'bucketname', 'token']}]
           },
           { model : Db.Field, as : 'major', attributes : ['id', 'name'] },
           { model : Db.Field, as : 'minor', attributes : ['id', 'name']  }

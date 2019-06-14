@@ -30,7 +30,8 @@ module.exports = new GraphQLObjectType({
           WHERE
           ${ !args.university_id ? '1' : 'school.university_id = :university' }
           ${ args.degree ? ' AND school.degree = :degree' : '' }
-          ${ args.search ? ' AND school.name LIKE :search' : ''}`,
+          ${ args.search ? ' AND school.name LIKE :search' : ''}
+          ORDER BY school.name ASC`,
           {
             replacements: {
               university: args.university_id,

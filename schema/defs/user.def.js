@@ -34,6 +34,12 @@ module.exports = new GraphQLObjectType({
         return Cache.get(Db.School, parent.school_id);
       }
     },
+    university : {
+      type : SchoolDef,
+      resolve(parent, args){
+        return Cache.get(Db.School, parent.university_id);
+      }
+    },
     major : {
       type : FieldDef,
       resolve(parent, args){

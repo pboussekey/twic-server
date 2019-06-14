@@ -20,7 +20,8 @@ module.exports = new GraphQLObjectType({
           WHERE field.deleted_at IS NULL
           ${args.search ? 'AND LCASE(field.name) LIKE :search' : ''}
           ${args.school_id ? 'AND school_field.school_id = :school' : ''}
-          GROUP BY field.id`,
+          GROUP BY field.id
+          ORDER BY field.name ASC`,
           {
             replacements: { school: args.school_id, search : args.search ? args.search.toLowerCase() + '%' : null },
             type: Db.Sequelize.QueryTypes.SELECT,

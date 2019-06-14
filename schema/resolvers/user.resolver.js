@@ -46,7 +46,7 @@ module.exports = new GraphQLObjectType({
           major_id : { type : GraphQLID},
           minor_id : { type : GraphQLID},
           class_year : { type : GraphQLInt},
-          exclude_school : { type : new GraphQLList(GraphQLID)},
+          id : { type : new GraphQLList(GraphQLID)},
           count : { type : GraphQLInt},
           page : { type : GraphQLInt},
         },
@@ -84,7 +84,7 @@ module.exports = new GraphQLObjectType({
           ${args.search ? ' OR LCASE(CONCAT(user.firstname,  user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname,  user.firstname)) LIKE :search)'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
           ${args.university_id ? ' AND (school.university_id = :university OR (school.university_id IS NULL AND school.id = :university))'  : '' }
-          ${args.exclude_school ? ' AND user.school_id NOT IN :exclude_school' : '' }
+          ${args.id && args.id.length ? ' AND user.id IN (:id)' : '' }
           ${args.major_id && !args.minor_id ? ' AND user.major_id = :major' : ''}
           ${args.minor_id && !args.major_id ? ' AND user.minor_id = :minor' : ''}
           ${args.minor_id && args.major_id ? ' AND (user.minor_id = :minor OR user.major_id = :major)' : ''}
@@ -111,7 +111,7 @@ module.exports = new GraphQLObjectType({
                 major : args.major_id,
                 minor : args.minor_id,
                 conversation : args.conversation_id,
-                exclude_school : args.exclude_school,
+                id : args.id,
                 class_year : args.class_year
               },
               type: Db.Sequelize.QueryTypes.SELECT,

@@ -50,6 +50,7 @@ const User = sequelize.define('user', {
 });
 
 User.belongsTo(School, { foreignKey: 'school_id', as : 'school' });
+User.belongsTo(School, { foreignKey: 'university_id', as : 'university' });
 User.belongsTo(Field, { foreignKey: 'major_id', as : 'major' });
 User.belongsTo(Field, { foreignKey: 'minor_id', as : 'minor' });
 User.belongsTo(File, { foreignKey : 'avatar_id', as : 'avatar'});
