@@ -38,7 +38,9 @@ module.exports = new GraphQLObjectType({
               });
             });
           }
-
+          if(args.parent_id){
+              Db.Post.update({ nbComments: sequelize.literal('nbComments + 1') }, { where: { id: args.parent_id } });
+          }
           if(args.files){
             args.files.forEach(f =>
               !f.id ?
@@ -62,7 +64,9 @@ module.exports = new GraphQLObjectType({
             },
             resolve : (parent, args, context) => Db.Like
               .create({ post_id : args.post_id, user_id : context.user.id})
-            .then(() => ({ success : true }))
+              .then(function(){
+                Db.Post.update({ nbLikes: sequelize.literal('nbLikes + 1') }, { where: { id: args.post_id } });
+                return { success : true };})
             .catch((error) => ({ success : false, message : 'Already liked'}))
           },
           unlikePost : {
@@ -72,7 +76,9 @@ module.exports = new GraphQLObjectType({
             },
             resolve : (parent, args, context) => Db.Like
               .destroy({ post_id : args.post_id, user_id : context.user.id})
-            .then(() => ({ success : true }))
+              .then(function(){
+                Db.Post.update({ nbLikes: sequelize.literal('nbLikes + 1') }, { where: { id: args.post_id } });
+                return { success : true };})
             .catch(() => ({ success : false, message : 'Not liked'}))
           }
         }

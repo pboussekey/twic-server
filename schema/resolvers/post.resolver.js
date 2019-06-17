@@ -18,14 +18,11 @@ module.exports = new GraphQLObjectType({
       resolve(parent, args, context){
         var query = `SELECT
             post.*,
-            COALESCE(likes.isLiked,false) as isLiked,
-            COALESCE(likes.nbLikes,0) as nbLikes,
-            COALESCE(comments.nbComments,0) as nbComments
+            \`like\`.post_id IS NOT NULL as isLiked
           FROM
             post
-            LEFT JOIN (SELECT post_id, COUNT(user_id) as nbLikes, SUM(IF(\`like\`.user_id = :user, 1, 0)) > 0 as isLiked FROM  \`like\` GROUP BY post_id) AS likes  ON (post.id = likes.post_id)
-            LEFT JOIN (SELECT parent_id, COUNT(comment.id) as nbComments FROM  post as comment WHERE comment.deleted_at IS NULL GROUP BY parent_id) as comments  ON (post.id = comments.parent_id)
-          `;
+            LEFT JOIN \`like\` ON (post.id = \`like\`.post_id AND \`like\`.user_id = :user)
+            `;
           if(args.user_id){
               query += `WHERE post.user_id = :user_id
               `;
@@ -33,8 +30,7 @@ module.exports = new GraphQLObjectType({
           else if(args.hashtag_id){
 
               query += `
-              LEFT JOIN post_hashtag ON (post.id = post_hashtag.post_id)
-              WHERE post_hashtag.hashtag_id = :hashtag
+              LEFT JOIN post_hashtag ON (post.id = post_hashtag.post_id AND post_hashtag.hashtag_id = :hashtag)
               `;
           }
           else if(args.parent_id){
@@ -44,18 +40,21 @@ module.exports = new GraphQLObjectType({
           }
           else{
             query += `
-            LEFT JOIN post_hashtag ON (post.id = post_hashtag.post_id)
-            LEFT JOIN hashtag_follower ON (post_hashtag.hashtag_id = hashtag_follower.hashtag_id AND hashtag_follower.follower_id = :user)
-            LEFT JOIN user_follower ON (post.user_id = user_follower.user_id AND user_follower.follower_id = :user)
-            WHERE post.deleted_at IS NULL AND post.parent_id IS NULL
-              AND (
-                post.user_id = :user
-                OR hashtag_follower.follower_id IS NOT NULL
-                OR user_follower.follower_id IS NOT NULL
-            )
+             JOIN (SELECT DISTINCT p.id
+                       FROM post p
+                       LEFT JOIN post_hashtag ON (p.id = post_hashtag.post_id)
+                       LEFT JOIN hashtag_follower ON (post_hashtag.hashtag_id = hashtag_follower.hashtag_id AND hashtag_follower.follower_id = :user)
+                       LEFT JOIN user_follower ON (p.user_id = user_follower.user_id AND user_follower.follower_id = :user)
+                       WHERE p.deleted_at IS NULL AND p.parent_id IS NULL
+                         AND (
+                           p.user_id = :user
+                           OR hashtag_follower.follower_id IS NOT NULL
+                           OR user_follower.follower_id IS NOT NULL
+                       )) AS posts ON post.id = posts.id
+
             `;
           }
-          query += `GROUP BY post.id
+          query += `
           ORDER BY post.created_at ${args.parent_id ? 'ASC' : 'DESC'}
           LIMIT ${(args.count || 10) * (args.page || 0)},${args.count || 10}`;
 

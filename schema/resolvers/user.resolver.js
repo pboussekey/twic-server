@@ -53,15 +53,13 @@ module.exports = new GraphQLObjectType({
         resolve(parent, args, context){
           var query =  `SELECT
           user.*,
-          SUM(IF(followers.follower_id = :user, 1, 0)) > 0 as followed,
-          SUM(IF(followings.user_id = :user, 1, 0)) > 0 as following,
-          COALESCE(COUNT(DISTINCT followers.follower_id),0) as nbFollowers,
-          COALESCE(COUNT(DISTINCT followings.user_id),0) as nbFollowings
+          IF(followers.follower_id IS NOT NULL, 1, 0) > 0 as followed,
+          IF(followings.user_id IS NOT NULL, 1, 0) > 0 as following
           FROM
           user
-          JOIN school ON (user.school_id = school.id)
-          LEFT JOIN user_follower as followers ON (user.id = followers.user_id)
-          LEFT JOIN user_follower as followings ON (user.id = followings.follower_id)
+          JOIN school ON (COALESCE(user.school_id, user.university_id) = school.id)
+          LEFT JOIN user_follower as followers ON (user.id = followers.user_id AND followers.follower_id = :user)
+          LEFT JOIN user_follower as followings ON (user.id = followings.follower_id AND followings.user_id = :user)
           `;
           if(args.user_id && args.follower){
             query += `JOIN user_follower ON (user.id = user_follower.follower_id AND user_follower.user_id = :user_id)
@@ -89,10 +87,9 @@ module.exports = new GraphQLObjectType({
           ${args.minor_id && !args.major_id ? ' AND user.minor_id = :minor' : ''}
           ${args.minor_id && args.major_id ? ' AND (user.minor_id = :minor OR user.major_id = :major)' : ''}
           ${args.class_year ? ' AND user.class_year = :class_year' : ''}
-          GROUP BY user.id
           ${ !args.user_id && null !== args.follower ? 'HAVING followed = :follower' : ''}
           ${ !args.user_id && null !== args.following ? 'HAVING following = :following' : ''}
-          ORDER BY COUNT(DISTINCT followers.follower_id) DESC
+          ORDER BY user.nb_followers DESC
           LIMIT ${(args.count || 10) * (args.page || 0)},${args.count || 10}`;
 
           return Db.sequelize

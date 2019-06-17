@@ -13,10 +13,12 @@ const Post = sequelize.define('post', {
     defaultValue: 'PUBLIC'
   },
   nbComments: {
-    type: Sequelize.VIRTUAL
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   },
   nbLikes: {
-    type: Sequelize.VIRTUAL
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   },
   isLiked: {
     type: Sequelize.VIRTUAL

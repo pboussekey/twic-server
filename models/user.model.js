@@ -39,13 +39,16 @@ const User = sequelize.define('user', {
     type: Sequelize.VIRTUAL
   },
   nbFollowers: {
-    type: Sequelize.VIRTUAL
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   },
   nbFollowings: {
-    type: Sequelize.VIRTUAL
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   },
   nbPosts: {
-    type: Sequelize.VIRTUAL
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   }
 });
 
