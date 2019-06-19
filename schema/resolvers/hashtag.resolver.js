@@ -31,6 +31,7 @@ module.exports = new GraphQLObjectType({
     'hashtags': {
       type: new GraphQLList(Hashtag),
       args: {
+        id : { type : new GraphQLList(GraphQLID)},
         followed : {type: GraphQLBoolean},
         search : {type: GraphQLString},
         user_id : {type : GraphQLID},
@@ -51,6 +52,7 @@ module.exports = new GraphQLObjectType({
           ${args.user_id ? 'JOIN hashtag_follower as followedBy ON (hashtag.id = hashtag_follower.hashtag_id AND hashtag_follower.user_id = :user_id)' : ''}
           WHERE hashtag.deleted_at IS NULL
           ${args.search ? 'AND LCASE(hashtag.name) LIKE :search' : ''}
+          ${args.id && args.id.length ? ' AND hashtag.id IN (:id)' : '' }
           GROUP BY hashtag.id
           ${ null !== args.followed ? 'HAVING followed = :followed' : ''}
           ORDER BY SUM(IF(hashtag_follower.follower_id IS NOT NULL, 1, 0)) DESC
@@ -61,6 +63,7 @@ module.exports = new GraphQLObjectType({
               user_id : args.user_id,
               university: args.university_id,
               followed : args.followed,
+              id : args.id,
               search : args.search ? args.search.toLowerCase() + '%' : null
             },
             type: Db.Sequelize.QueryTypes.SELECT,
