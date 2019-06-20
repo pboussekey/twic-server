@@ -42,6 +42,15 @@ var PostDef = new GraphQLObjectType({
         });
       }
     },
+    mentions : {
+      type : new GraphQLList(UserDef),
+      resolve(parent, args){
+        return Db.User.findAll({
+            raw : true,
+            include: [{ model : Db.Post, as : 'mentions', attributes : [], where : { id : parent.id }}]
+        });
+      }
+    },
     nbComments : {
       type : GraphQLInt
     },

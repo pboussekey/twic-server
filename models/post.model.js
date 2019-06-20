@@ -32,6 +32,8 @@ Post.belongsTo(Post, { foreignKey : 'parent_id', as : 'post'});
 Hashtag.belongsToMany(Post, {through: 'post_hashtag'});
 Post.belongsToMany(Hashtag, {through: 'post_hashtag'});
 
+User.belongsToMany(Post, {through: 'post_mention', as : 'mentions'});
+
 File.belongsToMany(Post, {through: 'post_file'});
 Post.belongsToMany(File, {through: 'post_file'});
 

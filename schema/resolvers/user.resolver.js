@@ -78,8 +78,7 @@ module.exports = new GraphQLObjectType({
             `;
           }
           query += `WHERE user.deleted_at IS NULL AND user.id <> :user
-          ${args.search ? ' AND (LCASE(CONCAT(user.firstname, " ", user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname, " ", user.firstname)) LIKE :search'  : ''}
-          ${args.search ? ' OR LCASE(CONCAT(user.firstname,  user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname,  user.firstname)) LIKE :search)'  : ''}
+          ${args.search ? ' AND (LCASE(CONCAT(user.firstname,user.lastname)) LIKE :search OR LCASE(CONCAT(user.lastname, user.firstname)) LIKE :search)'  : ''}
           ${args.school_id ? ' AND user.school_id = :school' : '' }
           ${args.university_id ? ' AND (school.university_id = :university OR (school.university_id IS NULL AND school.id = :university))'  : '' }
           ${args.id && args.id.length ? ' AND user.id IN (:id)' : '' }
@@ -104,7 +103,7 @@ module.exports = new GraphQLObjectType({
                 school : args.school_id,
                 university : args.university_id,
                 hashtag : args.hashtag_id,
-                search : args.search ? args.search.toLowerCase() + '%' : null,
+                search : args.search ? args.search.replace(/\s/g,'').toLowerCase() + '%' : null,
                 major : args.major_id,
                 minor : args.minor_id,
                 conversation : args.conversation_id,

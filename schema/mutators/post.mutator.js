@@ -16,12 +16,13 @@ module.exports = new GraphQLObjectType({
         parent_id : { type :  GraphQLID },
         privacy : { type :  GraphQLString, default : "PUBLIC" },
         files : { type :  new GraphQLList(FileInputDef) },
+        mentions : { type :  new GraphQLList(GraphQLID) },
       },
       resolve : (parent, args, context) =>
       Db.Post.create({content : args.content, privacy : args.privacy, user_id : context.user.id, parent_id : args.parent_id})
       .then(function(post){
         if(post.content){
-          var hashtagRegex = /#[A-Za-z0-9]+/g;
+          var hashtagRegex = /#[^\s\\]+/g;
           var hashtags = post.content.match(hashtagRegex);
           (hashtags || []).forEach(function(hashtag){
             hashtag = hashtag.substr(1);
@@ -37,6 +38,24 @@ module.exports = new GraphQLObjectType({
                 }
               });
             });
+
+            var mentionRegex = /@[^\s\\]+/g;
+            var mentions = post.content.match(mentionRegex);
+            (mentions || []).forEach(function(mention){
+              mention = mention.substr(1);
+              Db.User.findOne({
+                attribute : ['id'],
+                where : [Db.sequelize.where(
+                  Db.sequelize.fn('lower', Db.sequelize.fn('concat',Db.sequelize.col('firstname'),
+                  Db.sequelize.col('lastname'))),mention.toLowerCase()),
+                  { id : args.mentions }] })
+                .then(function(u){
+                  if(u && u.id){
+                    Db.PostMention.create({ user_id : u.id, post_id : post.id });
+                    args.mentions.splice(args.mentions.indexOf(u.id), 1);
+                  }
+                });
+              });
           }
           if(args.parent_id){
               Db.Post.update({ nbComments: sequelize.literal('nbComments + 1') }, { where: { id: args.parent_id } });
