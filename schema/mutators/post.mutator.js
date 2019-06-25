@@ -69,7 +69,16 @@ module.exports = new GraphQLObjectType({
                   bucketname : f.bucketname,
                   token : f.token,
                   type : f.type,
-                  user_id : context.user.id
+                  user_id : context.user.id,
+                  preview : f.preview ? {
+                      name : f.preview.name,
+                      bucketname : f.preview.bucketname,
+                      token : f.preview.token,
+                      type : f.preview.type,
+                      user_id : context.user.id,
+                  } : null
+                }, {
+                  include : [{association : Db.File.preview}]
                 })
                 .then(file => Db.PostFile.create({ post_id : post.id, file_id : file.id})) : Db.PostFile.create({ post_id : post.id, file_id : f.id}));
               }

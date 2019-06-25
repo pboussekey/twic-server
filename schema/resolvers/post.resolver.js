@@ -30,7 +30,7 @@ module.exports = new GraphQLObjectType({
           else if(args.hashtag_id){
 
               query += `
-              LEFT JOIN post_hashtag ON (post.id = post_hashtag.post_id AND post_hashtag.hashtag_id = :hashtag)
+              JOIN post_hashtag ON (post.id = post_hashtag.post_id AND post_hashtag.hashtag_id = :hashtag)
               `;
           }
           else if(args.parent_id){

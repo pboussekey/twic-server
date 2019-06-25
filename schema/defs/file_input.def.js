@@ -1,12 +1,15 @@
 const graphql = require('graphql');
 const { GraphQLInputObjectType, GraphQLString, GraphQLID } = graphql;
 
-module.exports = new GraphQLInputObjectType({
+var FileInputDef = new GraphQLInputObjectType({
   name: `FileInputDef`,
-  fields:  {
+  fields:  () => ({
     id: {type: GraphQLID},
     name: {type: GraphQLString},
     bucketname: {type: GraphQLString},
     token: {type: GraphQLString},
-    type: {type: GraphQLString}
-  }});
+    type: {type: GraphQLString},
+    preview : { type : FileInputDef }
+  })});
+
+  module.exports = FileInputDef;
