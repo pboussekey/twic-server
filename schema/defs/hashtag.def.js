@@ -7,5 +7,5 @@ module.exports = new GraphQLObjectType({
     id: {type:new GraphQLNonNull(GraphQLID)},
     name: {type: GraphQLString},
     followed: {type: GraphQLBoolean},
-    nbfollowers: {type: GraphQLInt}
+    nbFollowers: {type: GraphQLInt}
   }});

@@ -68,8 +68,8 @@ module.exports = new GraphQLObjectType({
       resolve : (parent, args, context) => Db.UserFollower
       .create({ user_id : args.user_id, follower_id : context.user.id})
       .then(function(){
-        Db.User.update({ nbFollowers: sequelize.literal('nbFollowers + 1') }, { where: { id: args.user_id } });
-        Db.User.update({ nbFnbFollowingsollowers: sequelize.literal('nbFollowings + 1') }, { where: { id: context.user.id } });
+        Db.User.update({ nbFollowers: Db.sequelize.literal('nb_followers + 1') }, { where: { id: args.user_id } });
+        Db.User.update({ nbFnbFollowingsollowers: Db.sequelize.literal('nb_followings + 1') }, { where: { id: context.user.id } });
         return { success : true };})
       .catch(() => ({ success : false, message : 'Already followed'}))
     },
@@ -82,8 +82,8 @@ module.exports = new GraphQLObjectType({
       resolve : (parent, args, context) => Db.UserFollower
       .destroy({ where : { user_id : args.user_id, follower_id : context.user.id} })
       .then(function(){
-        Db.User.update({ nbFollowers: sequelize.literal('nbFollowers - 1') }, { where: { id: args.user_id } });
-        Db.User.update({ nbFnbFollowingsollowers: sequelize.literal('nbFollowings - 1') }, { where: { id: context.user.id } });
+        Db.User.update({ nbFollowers: Db.sequelize.literal('nb_followers - 1') }, { where: { id: args.user_id } });
+        Db.User.update({ nbFnbFollowingsollowers: Db.sequelize.literal('nb_followings - 1') }, { where: { id: context.user.id } });
         return { success : true };})
       .catch(() => ({ success : false, message : 'Not followed'}))
     }

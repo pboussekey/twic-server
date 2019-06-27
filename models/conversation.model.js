@@ -7,10 +7,20 @@ const Conversation = sequelize.define('conversation', {
   name: {
     type: Sequelize.STRING
   },
+  type: {
+    type: Sequelize.ENUM('MESSAGE', 'GROUP', 'CHANNEL'),
+    defaultValue: 'MESSAGE'
+  },
   last: {
     type: Sequelize.VIRTUAL
   },
   lastDate: {
+    type: Sequelize.VIRTUAL
+  },
+  lastId: {
+    type: Sequelize.VIRTUAL
+  },
+  unread: {
     type: Sequelize.VIRTUAL
   }
 });

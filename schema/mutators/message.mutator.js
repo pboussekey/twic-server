@@ -3,12 +3,14 @@ const { GraphQLObjectType, GraphQLList, GraphQLString, GraphQLNonNull, GraphQLID
 const Db = require('../../database/database');
 const MessageDef = require('../defs/message.def');
 const FileInputDef = require('../defs/file_input.def');
+const Cache = require('../../database/cache');
 
 
 function _createConversation(args, context){
   return Db.Conversation.create({
     name : args.name,
-    picture_id : args.picture_id
+    picture_id : args.picture_id,
+    type : args.hashtag_id ? 'CHANNEL' : (args.users.length > 1 ? 'GROUP' : 'MESSAGE')
   }).then(function(conversation){
     if(args.users){
       args.users.push(context.user.id);
@@ -39,12 +41,22 @@ function _createMessage(args, context){
   .then((message) => message);
 }
 
-function createMessage(args, context){
-  return  !args.attachment ? _createMessage(args, context) :
-  Db.File.create(args.attachment).then(function(attachment){
-    args.file_id = attachment.id;
-    return _createMessage(args, context) ;
-  })
+async function createMessage(args, context, conversation) {
+  if(!conversation){
+    var conversation = await Cache.get(Db.Conversation, args.conversation_id);
+    if(!conversation) return null;
+  }
+  args.type = conversation.type;
+  var users = await Cache.get(Db.ConversationUser, args.conversation_id);
+  if(!users.find((conversation_user) => conversation_user.user_id == context.user.id)){
+    return null;
+  }
+  if(!args.attachment){
+    return  _createMessage(args, context);
+  }
+  var attachment = await Db.File.create(args.attachment);
+  args.file_id = attachment.id;
+  return _createMessage(args, context) ;
 }
 
 
@@ -89,12 +101,12 @@ module.exports = new GraphQLObjectType({
             }).then(function(conversation){
               if(conversation[0]){
                 args.conversation_id = conversation[0].id;
-                return createMessage(args, context);
+                return createMessage(args, context, conversation[0]);
               }
               else{
                 return createConversation(args, context).then(function(conversation){
                   args.conversation_id = conversation.id;
-                  return createMessage(args, context);
+                  return createMessage(args, context, conversation);
                 });
               }
             })

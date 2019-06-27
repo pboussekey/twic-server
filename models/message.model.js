@@ -7,7 +7,11 @@ const Conversation = require('./conversation.model');
 const Message = sequelize.define('message', {
   text: {
     type: Sequelize.STRING
-  }
+  },
+  type: {
+    type: Sequelize.ENUM('MESSAGE', 'GROUP', 'CHANNEL'),
+    defaultValue: 'MESSAGE'
+  },
 });
 
 Message.belongsTo(File, { foreignKey: {

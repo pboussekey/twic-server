@@ -6,6 +6,7 @@ const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/root.schema');
 var jwt = require('express-jwt');
+var JWT = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const uuidv4 = require('uuid/v4');
 const jsonwebtoken = require('jsonwebtoken');
@@ -198,7 +199,14 @@ app.post('/login', (req, res) => {
       const subscriptionServer = new SubscriptionServer({
             execute,
             subscribe,
-            schema
+            schema,
+            onConnect : (data, _, context) => {
+              data = JSON.parse(data);
+              return JWT.verify(data['Authorization'], configuration.AUTH_SECRET, function(err, decoded){
+                  if(err || !decoded) return false;
+                  return { user : decoded };
+              });
+            },
         }, {
             server: ws,
             reconnect: true,

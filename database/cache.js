@@ -7,6 +7,9 @@ var  _cache = {};
 function get(model, ids){
   if(!_cache[model.name]){
     _cache[model.name] = new DataLoader(async function(ids) {
+      if(model.get){
+        return model.get(ids);
+      }
       var result = await model.findAll({ raw: true, where : {id : ids} });
       var objects = _.groupBy(result, 'id');
       return ids.map(id => objects[id] ? objects[id][0] : null);
