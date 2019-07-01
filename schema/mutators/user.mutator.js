@@ -73,6 +73,17 @@ module.exports = new GraphQLObjectType({
         return { success : true };})
       .catch(() => ({ success : false, message : 'Already followed'}))
     },
+    registerFcmToken: {
+      type : ResultDef,
+      args : {
+        token : { type :  new GraphQLNonNull(GraphQLString) }
+      },
+      resolve : function(parent, args, context){
+console.log("\n\n\n\n\n\n\n\n\n\nALLO TOKEN?!", args.token);
+        return Db.UserFcmToken
+      .findOrCreate({ where : { token : args.token, user_id : context.user.id}})
+      .then(() =>  { success : true });}
+    },
 
     unfollowUser: {
       type : ResultDef,
