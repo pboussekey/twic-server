@@ -25,7 +25,7 @@ function createFromTpl(name, source, destination){
   });
 
   fs.readFile(source, "utf8", function(err, content) {
-    content = content.replace(/{name}/g, name).replace(/{Name}/g, _.upperFirst(name));
+    content = content.replace(/{name}/g, name.toLowerCase()).replace(/{Name}/g, _.upperFirst(name.toLowerCase()));
     if(err){
       console.log(err);
       process.exit(-1);
@@ -50,5 +50,5 @@ _.forOwn(_options, (value, key) => argv[key] && types.push(value) );
 types.forEach(arg => {
     arg = arg.split('/');
     console.log(name, arg);
-    createFromTpl(name, `scripts/tpl/${arg[1]}.tpl`, `${arg[0]}/${arg[1]}s/${name}.${arg[1]}.js`);
+    createFromTpl(name, `scripts/tpl/${arg[1]}.tpl`, `${arg[0].toLowerCase()}/${arg[1]}s/${name.toLowerCase()}.${arg[1]}.js`);
 });

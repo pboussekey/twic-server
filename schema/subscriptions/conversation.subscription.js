@@ -34,24 +34,26 @@ module.exports = new GraphQLObjectType({
   Db.Message.afterCreate(function(message){
       pubsub.publish(`NEW_MESSAGE_${message.conversation_id}`, message);
       Cache.get(Db.User, message.user_id).then(function(user){
+        message.dataValues.user = { id : user.id, firstname : user.firstname, lastname : user.lastname };
         Db.ConversationUser.findAll({ where : { conversation_id : message.conversation_id}})
           .then(function(conversation_users){
             Db.UserFcmToken.findAll({ where : { user_id : conversation_users.map((cu) => cu.user_id)}})
             .then(function(fcm_tokens){
               var ntf = {
                   registration_ids: fcm_tokens.map((fcm_token) => fcm_token.token),
-                  data: {
-                      "click_action": "FLUTTER_NOTIFICATION_CLICK"
-                  },
                   notification: {
-                      title: user.firstname + ' ' + user.lastname,
-                      body: message.text || 'Send a file'
+                        title: user.firstname + ' ' + user.lastname,
+                        body: message.text || 'Send a file'
+                  },
+                  data: {
+                      "type" : "Message",
+                      "data" : JSON.stringify(message),
+                      "click_action": "FLUTTER_NOTIFICATION_CLICK",
                   }
               };
-              console.log("\n\n\n\n\nNTF", ntf, {collapse_key: 'twic_message'});
               Fcm.send(ntf, function(err, response){
                   if (err) {
-                      console.log("Something has gone wrong!",err);
+                      console.log("Something has gone wrong!",err, response);
                   } else {
                       console.log("Successfully sent with response: ", response.results[0]);
                   }

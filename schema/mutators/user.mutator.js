@@ -68,6 +68,14 @@ module.exports = new GraphQLObjectType({
       resolve : (parent, args, context) => Db.UserFollower
       .create({ user_id : args.user_id, follower_id : context.user.id})
       .then(function(){
+
+        Cache.get(Db.User, context.user.id)
+          .then((user) => Db.Notification.create({
+          user_id : args.user_id,
+          creator_id : context.user.id,
+          type : 'FOLLOW',
+          text : `{user} {count} started following you`
+        }));
         Db.User.update({ nbFollowers: Db.sequelize.literal('nb_followers + 1') }, { where: { id: args.user_id } });
         Db.User.update({ nbFnbFollowingsollowers: Db.sequelize.literal('nb_followings + 1') }, { where: { id: context.user.id } });
         return { success : true };})
@@ -79,7 +87,6 @@ module.exports = new GraphQLObjectType({
         token : { type :  new GraphQLNonNull(GraphQLString) }
       },
       resolve : function(parent, args, context){
-console.log("\n\n\n\n\n\n\n\n\n\nALLO TOKEN?!", args.token);
         return Db.UserFcmToken
       .findOrCreate({ where : { token : args.token, user_id : context.user.id}})
       .then(() =>  { success : true });}
@@ -93,6 +100,14 @@ console.log("\n\n\n\n\n\n\n\n\n\nALLO TOKEN?!", args.token);
       resolve : (parent, args, context) => Db.UserFollower
       .destroy({ where : { user_id : args.user_id, follower_id : context.user.id} })
       .then(function(){
+        Db.Notification.destroy(
+          {
+            individualHooks: true,
+            where : {
+              creator_id : context.user.id,
+              user_id : args.user_id,
+              deletedAt : null, type : 'FOLLOW'}
+          });
         Db.User.update({ nbFollowers: Db.sequelize.literal('nb_followers - 1') }, { where: { id: args.user_id } });
         Db.User.update({ nbFnbFollowingsollowers: Db.sequelize.literal('nb_followings - 1') }, { where: { id: context.user.id } });
         return { success : true };})
