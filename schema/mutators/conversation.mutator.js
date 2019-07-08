@@ -89,7 +89,6 @@ module.exports = new GraphQLObjectType({
                 Db.sequelize.fn('lower', args.name)
               )
             }).spread(function(hashtag){
-              console.log(hashtag, hashtag.id, hashtag.name);
                   args.users = [];
                   args.hashtag_id = hashtag.id;
                   args.name = hashtag.name;

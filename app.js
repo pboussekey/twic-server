@@ -62,7 +62,6 @@ function sendMagicLink(email, request_token,  magic_token, resolve){
         });
       }
       mail.send('Twic activation', body['shortLink'], email.trim());
-      console.log(request_token);
       resolve(request_token);
     });
 }
@@ -179,7 +178,7 @@ app.post('/login', (req, res) => {
 
   app.use(auth).use('/api', graphqlHTTP(req => ({
     schema,
-    graphiql:true,
+    graphiql:false,
     subscriptionsEndpoint: subscriptionsEndpoint,
     context: {
       user: req.user

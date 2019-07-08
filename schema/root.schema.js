@@ -1,9 +1,9 @@
 const graphql = require('graphql');
 const { GraphQLSchema } = graphql;
 const { mergeSchemas } = require("graphql-tools");
-const Resolvers = require('../loaders/resolvers');
-const Mutators = require('../loaders/mutators');
-const Subscriptions = require('../loaders/subscriptions');
+const Resolvers = require('./loaders/resolvers');
+const Mutators = require('./loaders/mutators');
+const Subscriptions = require('./loaders/subscriptions');
 const _ = require('lodash');
 
 module.exports = mergeSchemas({

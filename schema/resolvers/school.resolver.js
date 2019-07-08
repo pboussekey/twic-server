@@ -11,7 +11,6 @@ module.exports = new GraphQLObjectType({
       type: School,
       args: {id : {type: GraphQLID}},
       resolve(parent, args, context){
-        console.log("??");
         return Cache.get(Db.School,args.id);
       }
     },
