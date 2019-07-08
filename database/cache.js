@@ -13,7 +13,6 @@ function get(model, ids){
       }
       var result = await model.findAll({ raw: true, where : {id : ids} });
       var objects = _.groupBy(result, 'id');
-      console.log(ids.map(id => objects[id] ? objects[id][0] : null));
       return ids.map(id => objects[id] ? objects[id][0] : null);
     });
   }

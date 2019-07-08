@@ -5,7 +5,8 @@ var _options = {
   m : './model',
   d : 'schema/def',
   r : 'schema/resolver',
-  u : 'schema/mutator'
+  u : 'schema/mutator',
+  s : 'schema/subscription'
 };
 
 var argv = require('minimist')(process.argv.slice(2));
