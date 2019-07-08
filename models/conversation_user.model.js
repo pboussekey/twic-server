@@ -3,6 +3,7 @@ const sequelize = require('../database/sequelize');
 const User = require('./user.model');
 const Conversation = require('./conversation.model');
 const Message = require('./message.model');
+const _ = require('lodash');
 
 const ConversationUser = sequelize.define('conversation_user',
   {},
@@ -28,5 +29,11 @@ ConversationUser.belongsTo(Conversation, { foreignKey: {
 }});
 
 ConversationUser.removeAttribute('id');
+
+ConversationUser.get = async function(ids){
+   var users = await ConversationUser.findAll({ raw : true, where : { conversation_id : ids}});
+   var objects = _.groupBy(users, 'conversation_id');
+   return ids.map(id => objects[id] ? objects[id] : []);
+};
 
 module.exports = ConversationUser;

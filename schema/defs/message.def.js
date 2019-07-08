@@ -31,4 +31,7 @@ module.exports = new GraphQLObjectType({
         return Cache.get(Db.File, parent.file_id);
       }
     },
+    type : {
+      type : GraphQLString
+    }
   }});

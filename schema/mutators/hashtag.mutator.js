@@ -14,7 +14,9 @@ module.exports = new GraphQLObjectType({
       },
       resolve : (parent, args, context) => Db.HashtagFollower
         .create({ hashtag_id : args.hashtag_id, follower_id : context.user.id})
-      .then(() => ({ success : true }))
+        .then(function(){
+          Db.Hashtag.update({ nbFollowers: Db.sequelize.literal('nb_followers + 1') }, { where: { id: args.hashtag_id } });
+          return { success : true };})
       .catch(() => ({ success : false, message : 'Already followed'}))
     },
 
@@ -25,7 +27,9 @@ module.exports = new GraphQLObjectType({
       },
       resolve : (parent, args, context) => Db.HashtagFollower
         .destroy({ where : { hashtag_id : args.hashtag_id, follower_id : context.user.id} })
-      .then(() => ({ success : true }))
+        .then(function(){
+          Db.Hashtag.update({ nbFollowers: Db.sequelize.literal('nb_followers - 1') }, { where: { id: args.hashtag_id } });
+          return { success : true };})
       .catch(() => ({ success : false, message : 'Not followed'}))
     }
   }

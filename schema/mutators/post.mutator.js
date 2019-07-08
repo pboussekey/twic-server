@@ -58,7 +58,7 @@ module.exports = new GraphQLObjectType({
               });
           }
           if(args.parent_id){
-              Db.Post.update({ nbComments: sequelize.literal('nbComments + 1') }, { where: { id: args.parent_id } });
+              Db.Post.update({ nbComments: Db.sequelize.literal('nb_Comments + 1') }, { where: { id: args.parent_id } });
           }
           if(args.files){
             args.files.forEach(f =>
@@ -69,7 +69,16 @@ module.exports = new GraphQLObjectType({
                   bucketname : f.bucketname,
                   token : f.token,
                   type : f.type,
-                  user_id : context.user.id
+                  user_id : context.user.id,
+                  preview : f.preview ? {
+                      name : f.preview.name,
+                      bucketname : f.preview.bucketname,
+                      token : f.preview.token,
+                      type : f.preview.type,
+                      user_id : context.user.id,
+                  } : null
+                }, {
+                  include : [{association : Db.File.preview}]
                 })
                 .then(file => Db.PostFile.create({ post_id : post.id, file_id : file.id})) : Db.PostFile.create({ post_id : post.id, file_id : f.id}));
               }
@@ -84,7 +93,7 @@ module.exports = new GraphQLObjectType({
             resolve : (parent, args, context) => Db.Like
               .create({ post_id : args.post_id, user_id : context.user.id})
               .then(function(){
-                Db.Post.update({ nbLikes: sequelize.literal('nbLikes + 1') }, { where: { id: args.post_id } });
+                Db.Post.update({ nbLikes: Db.sequelize.literal('nb_likes + 1') }, { where: { id: args.post_id } });
                 return { success : true };})
             .catch((error) => ({ success : false, message : 'Already liked'}))
           },
@@ -96,7 +105,7 @@ module.exports = new GraphQLObjectType({
             resolve : (parent, args, context) => Db.Like
               .destroy({ post_id : args.post_id, user_id : context.user.id})
               .then(function(){
-                Db.Post.update({ nbLikes: sequelize.literal('nbLikes + 1') }, { where: { id: args.post_id } });
+                Db.Post.update({ nbLikes: Db.sequelize.literal('nb_likes + 1') }, { where: { id: args.post_id } });
                 return { success : true };})
             .catch(() => ({ success : false, message : 'Not liked'}))
           }

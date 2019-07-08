@@ -8,7 +8,7 @@ var serviceAccount = require('./gc.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: configuration.FB_DB
-});
+}, 'fb_token');
 
 
 module.exports =  {

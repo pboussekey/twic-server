@@ -73,7 +73,7 @@ exports.upload = functions.https.onRequest((req, res) => {
     busboy.on('file', (fieldname, file, filename, encoding, mimeType) => {
       const filePath = path.join(os.tmpdir(), filename);
       fileData = { filePath: filePath, type : mimeType, name : filename };
-      file.pipe(fs.createWriteStream(filePath));
+      file.pipe(fs.createWriteStream(filePath, { resumable: false }));
     });
 
     var preview;
@@ -82,69 +82,7 @@ exports.upload = functions.https.onRequest((req, res) => {
         const bucket = gcs.bucket('twicapp-5d95f.appspot.com');
         const id = uuid();
         const id_thumb = uuid();
-        let fileDestination = user + '/' + id + '-' + fileData.name + ".thumb";
         let filePath = user + '/' + id + '-' + fileData.name;
-        if(fileData.type && fileData.type.startsWith("video")){
-
-        var entry = log.entry(METADATA, "EXTRACTING FRAME");
-        log.write(entry);
-          const id_thumb = uuid();
-          extractFrames({
-            input: fileData.filePath,
-            output: `${fileData.filePath}.thumb`,
-            offsets: [
-              1000
-            ]
-          })
-          .then(() => firebase.auth().signInWithCustomToken(token))
-          .then(
-              () => {
-
-                var entry = log.entry(METADATA, "UPLOADING THUMB");
-                log.write(entry);
-                return bucket.upload(
-               `${fileData.filePath}.thumb`,
-               {  uploadType : 'media',
-               destination : filePath,
-               metadata : {
-                 metadata : {
-                   contentType : 'image/jpeg',
-                   firebaseStorageDownloadTokens : id_thumb
-                 }
-
-               }});}
-            ).then((uploadData) => preview = {
-                filename : fileData.name + '.thumb',
-                bucketname : encodeURIComponent(uploadData[0].name),
-                type : 'image/jpeg',
-                token : id_thumb
-              }
-            ).then(
-                () => {
-                                var entry = log.entry(METADATA, "UPLOADING VIDEO");
-                                log.write(entry);return bucket.upload(
-                 fileData.filePath,
-                 {  uploadType : 'media',
-                 destination : filePath,
-                 metadata : {
-                   metadata : {
-                     contentType : fileData.type,
-                     firebaseStorageDownloadTokens : id
-                   }
-
-                 }});}
-              ).then((uploadData) => res.status(201).json({
-                  filename : fileData.name,
-                  bucketname : encodeURIComponent(uploadData[0].name),
-                  type : fileData.type,
-                  token : id
-                })
-              )
-            .catch(error => {
-              return res.status(401).json({ error: error });
-            });
-        }
-        else{
           firebase.auth().signInWithCustomToken(token).then(
               () =>  bucket.upload(
                fileData.filePath,
@@ -167,7 +105,6 @@ exports.upload = functions.https.onRequest((req, res) => {
             .catch(error => {
               return res.status(401).json({ error: error });
             });
-        }
   });
 
     return busboy.end(req.rawBody);

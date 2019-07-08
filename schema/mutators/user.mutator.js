@@ -68,10 +68,28 @@ module.exports = new GraphQLObjectType({
       resolve : (parent, args, context) => Db.UserFollower
       .create({ user_id : args.user_id, follower_id : context.user.id})
       .then(function(){
-        Db.User.update({ nbFollowers: sequelize.literal('nbFollowers + 1') }, { where: { id: args.user_id } });
-        Db.User.update({ nbFnbFollowingsollowers: sequelize.literal('nbFollowings + 1') }, { where: { id: context.user.id } });
+
+        Cache.get(Db.User, context.user.id)
+          .then((user) => Db.Notification.create({
+          user_id : args.user_id,
+          creator_id : context.user.id,
+          type : 'FOLLOW',
+          text : `{user} {count} started following you`
+        }));
+        Db.User.update({ nbFollowers: Db.sequelize.literal('nb_followers + 1') }, { where: { id: args.user_id } });
+        Db.User.update({ nbFnbFollowingsollowers: Db.sequelize.literal('nb_followings + 1') }, { where: { id: context.user.id } });
         return { success : true };})
       .catch(() => ({ success : false, message : 'Already followed'}))
+    },
+    registerFcmToken: {
+      type : ResultDef,
+      args : {
+        token : { type :  new GraphQLNonNull(GraphQLString) }
+      },
+      resolve : function(parent, args, context){
+        return Db.UserFcmToken
+      .findOrCreate({ where : { token : args.token, user_id : context.user.id}})
+      .then(() =>  { success : true });}
     },
 
     unfollowUser: {
@@ -82,8 +100,16 @@ module.exports = new GraphQLObjectType({
       resolve : (parent, args, context) => Db.UserFollower
       .destroy({ where : { user_id : args.user_id, follower_id : context.user.id} })
       .then(function(){
-        Db.User.update({ nbFollowers: sequelize.literal('nbFollowers - 1') }, { where: { id: args.user_id } });
-        Db.User.update({ nbFnbFollowingsollowers: sequelize.literal('nbFollowings - 1') }, { where: { id: context.user.id } });
+        Db.Notification.destroy(
+          {
+            individualHooks: true,
+            where : {
+              creator_id : context.user.id,
+              user_id : args.user_id,
+              deletedAt : null, type : 'FOLLOW'}
+          });
+        Db.User.update({ nbFollowers: Db.sequelize.literal('nb_followers - 1') }, { where: { id: args.user_id } });
+        Db.User.update({ nbFnbFollowingsollowers: Db.sequelize.literal('nb_followings - 1') }, { where: { id: context.user.id } });
         return { success : true };})
       .catch(() => ({ success : false, message : 'Not followed'}))
     }

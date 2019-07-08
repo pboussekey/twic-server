@@ -1,10 +1,11 @@
 const graphql = require('graphql');
-const { GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLID, GraphQLString } = graphql;
+const { GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLID, GraphQLString, GraphQLInt } = graphql;
 const graphql_date = require('graphql-iso-date');
 const {
   GraphQLDateTime
 } = graphql_date;
 const UserDef = require('./user.def');
+const HashtagDef = require('./hashtag.def');
 const Db = require('../../database/database');
 const FileDef = require('./file.def.js');
 const Cache = require('../../database/cache');
@@ -15,8 +16,21 @@ module.exports = new GraphQLObjectType({
     id: {type: new GraphQLNonNull(GraphQLID)},
     name: {type: GraphQLString},
     last: {type: GraphQLString},
+    type: {type: GraphQLString},
     lastDate: {
       type: GraphQLDateTime
+    },
+    lastId : {
+      type : GraphQLID
+    },
+    unread : {
+      type : GraphQLInt
+    },
+    hashtag : {
+      type : HashtagDef,
+      resolve(parent, args){
+        return Cache.get(Db.Hashtag, parent.hashtag_id);
+      }
     },
     picture : {
       type : FileDef,
@@ -27,7 +41,7 @@ module.exports = new GraphQLObjectType({
     users : {
       type: GraphQLList(UserDef),
       resolve(parent, args, context){
-        return Db.sequelize
+        return !parent.hashtag_id ? Db.sequelize
         .query(
           `SELECT user.*
           FROM user
@@ -41,6 +55,6 @@ module.exports = new GraphQLObjectType({
             type: Db.Sequelize.QueryTypes.SELECT,
             model: Db.User,
             mapToModel: true
-          });
+          }) : null;
     }}
   }});

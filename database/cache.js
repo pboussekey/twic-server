@@ -5,10 +5,15 @@ const _ = require('lodash');
 var  _cache = {};
 
 function get(model, ids){
+  console.log(model.name,'\n', ids, '\n', _cache[model.name]);
   if(!_cache[model.name]){
     _cache[model.name] = new DataLoader(async function(ids) {
+      if(model.get){
+        return model.get(ids);
+      }
       var result = await model.findAll({ raw: true, where : {id : ids} });
       var objects = _.groupBy(result, 'id');
+      console.log(ids.map(id => objects[id] ? objects[id][0] : null));
       return ids.map(id => objects[id] ? objects[id][0] : null);
     });
   }

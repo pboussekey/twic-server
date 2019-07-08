@@ -8,9 +8,10 @@ const Hashtag = sequelize.define('hashtag', {
   followed: {
     type: Sequelize.VIRTUAL
   },
-  nbfollowers: {
-    type: Sequelize.VIRTUAL
-  }
+  nbFollowers: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
+  },
 });
 
 module.exports = Hashtag;

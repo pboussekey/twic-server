@@ -18,4 +18,5 @@ const File = sequelize.define('file', {
 });
 
 
+File.preview = File.belongsTo(File, { foreignKey : 'preview_id', as : 'preview'});
 module.exports = File;
